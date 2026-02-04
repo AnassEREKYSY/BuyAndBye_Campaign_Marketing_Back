@@ -1,0 +1,51 @@
+## Server
+
+# Run the server 
+php artisan serve
+
+# Custom the port 
+php artisan serve --port=8001
+
+# Check registred routes 
+php artisan route:list
+
+---------------------------------------------------------------------------------------------
+
+## Swagger 
+
+# Regenerate docs after changes
+php artisan l5-swagger:generate
+
+# Clear config if Swagger acts weird
+php artisan config:clear
+
+---------------------------------------------------------------------------------------------
+
+## Migrations : they are created at 'database/migrations/'
+
+# Create a migration 
+php artisan make:migration create_products_table
+
+# Create a migration linked to an existing model
+php artisan make:migration create_users_table --create=users
+
+# Add columns to an existing table
+php artisan make:migration add_fields_to_products_table --table=products
+
+# Run all pending migrations
+php artisan migrate
+
+# Run migration with details 
+php artisan migrate --verbose
+
+# Rollback last migration 
+php artisan migrate:rollback
+
+# Reset + re-run everything
+php artisan migrate:fresh
+
+# Reset DB + seed
+php artisan migrate:fresh --seed
+
+# Check migration status
+php artisan migrate:status

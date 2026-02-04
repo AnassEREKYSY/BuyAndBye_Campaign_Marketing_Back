@@ -11,6 +11,51 @@ use Src\Application\Products\DTOs\UpdateProductRequest as UpdateProductDTO;
 use Src\Application\Products\UseCases\GetProductByIdUseCase;
 use Src\Application\Products\UseCases\UpdateProductUseCase;
 
+/**
+ * @OA\Put(
+ *     path="/api/v1/products/update/{productId}",
+ *     tags={"Products"},
+ *     summary="Update a product",
+ *     description="Update an existing product",
+ *     security={{"bearerAuth":{}}},
+ *
+ *     @OA\Parameter(
+ *         name="productId",
+ *         in="path",
+ *         required=true,
+ *         description="Product ID",
+ *         @OA\Schema(type="string")
+ *     ),
+ *
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             @OA\Property(property="title", type="string"),
+ *             @OA\Property(property="description", type="string"),
+ *             @OA\Property(property="category_id", type="string"),
+ *             @OA\Property(property="condition", type="string"),
+ *             @OA\Property(property="price", type="number", format="float"),
+ *             @OA\Property(property="stock_quantity", type="integer"),
+ *             @OA\Property(property="images_data", type="array", @OA\Items(type="string")),
+ *             @OA\Property(property="tags", type="array", @OA\Items(type="string")),
+ *             @OA\Property(property="weight_kg", type="number"),
+ *             @OA\Property(property="sku", type="string"),
+ *             @OA\Property(property="is_digital", type="boolean"),
+ *             @OA\Property(property="allow_returns", type="boolean"),
+ *             @OA\Property(property="return_days", type="integer")
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=200,
+ *         description="Product updated successfully"
+ *     ),
+ *     @OA\Response(response=401, description="Unauthorized"),
+ *     @OA\Response(response=403, description="Forbidden"),
+ *     @OA\Response(response=404, description="Product not found")
+ * )
+ */
+
 class UpdateProductController extends Controller
 {
     public function __invoke(
