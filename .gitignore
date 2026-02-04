@@ -16,3 +16,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+DATABASE_SETUP_AND_USAGE.txt
