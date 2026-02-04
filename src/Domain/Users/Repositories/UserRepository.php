@@ -6,13 +6,7 @@ namespace Src\Domain\Users\Repositories;
 
 use Src\Domain\Users\Entities\User;
 
-interface UserRepositoryInterface
+class UserRepository implements UserRepositoryInterface
 {
-    public function create(array $attributes): User;
-
-    public function update(string $id, array $attributes): User;
-
-    public function findById(string $id): ?User;
-
-    public function findByEmail(string $email): ?User;
-}
+    public function create(array $attributes): User
+    {

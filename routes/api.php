@@ -1,23 +1,23 @@
 <?php
 
-use App\Http\Controllers\Api\V1\Auth\CheckAdminAuthorizationController;
-use App\Http\Controllers\Api\V1\Auth\CheckBuyerAuthorizationController;
-use App\Http\Controllers\Api\V1\Auth\CheckSellerAuthorizationController;
-use App\Http\Controllers\Api\V1\Auth\CheckSellerOrAdminAuthorizationController;
-use App\Http\Controllers\Api\V1\Auth\GetAuthenticatedUserController;
-use App\Http\Controllers\Api\V1\Auth\LoginController;
-use App\Http\Controllers\Api\V1\Auth\LoginWithGoogleController;
-use App\Http\Controllers\Api\V1\Auth\RegisterController;
-use App\Http\Controllers\Api\V1\Products\CreateProductController;
-use App\Http\Controllers\Api\V1\Products\DeleteProductController;
-use App\Http\Controllers\Api\V1\Products\GetProductByIdController;
-use App\Http\Controllers\Api\V1\Products\GetSellerProductsController;
-use App\Http\Controllers\Api\V1\Products\UpdateProductController;
-use App\Http\Controllers\Api\V1\Users\CompleteProfileController;
-use App\Http\Controllers\Api\V1\Users\GetProfileStatusController;
-use App\Http\Controllers\Api\V1\Users\GetUserProfileController;
-use App\Http\Controllers\Api\V1\Users\SkipProfileController;
-use App\Http\Controllers\Api\V1\Users\UpdateProfileController;
+use Src\Api\V1\Controllers\Auth\CheckAdminAuthorizationController;
+use Src\Api\V1\Controllers\Auth\CheckBuyerAuthorizationController;
+use Src\Api\V1\Controllers\Auth\CheckSellerAuthorizationController;
+use Src\Api\V1\Controllers\Auth\CheckSellerOrAdminAuthorizationController;
+use Src\Api\V1\Controllers\Auth\GetAuthenticatedUserController;
+use Src\Api\V1\Controllers\Auth\LoginController;
+use Src\Api\V1\Controllers\Auth\LoginWithGoogleController;
+use Src\Api\V1\Controllers\Auth\RegisterController;
+use Src\Api\V1\Controllers\Products\CreateProductController;
+use Src\Api\V1\Controllers\Products\DeleteProductController;
+use Src\Api\V1\Controllers\Products\GetProductByIdController;
+use Src\Api\V1\Controllers\Products\GetSellerProductsController;
+use Src\Api\V1\Controllers\Products\UpdateProductController;
+use Src\Api\V1\Controllers\Users\CompleteProfileController;
+use Src\Api\V1\Controllers\Users\GetProfileStatusController;
+use Src\Api\V1\Controllers\Users\GetUserProfileController;
+use Src\Api\V1\Controllers\Users\SkipProfileController;
+use Src\Api\V1\Controllers\Users\UpdateProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,6 +30,11 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+// Health check endpoint
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok', 'message' => 'API is running']);
+});
 
 Route::prefix('v1')->group(function () {
     // Authentication endpoints - public routes
