@@ -6,6 +6,7 @@ namespace App\Http\Requests\Users;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
+use Src\Infrastructure\Services\Base64ImageConverter;
 
 class UpdateProfileRequest extends FormRequest
 {
@@ -36,6 +37,28 @@ class UpdateProfileRequest extends FormRequest
             'store_description' => ['sometimes', 'nullable', 'string'],
             'store_banner' => ['sometimes', 'nullable', 'image', 'max:5120'],
         ];
+    }
+
+    /**
+     * Prepare input data for validation and UseCases.
+     * Converts photo and store_banner files to base64 data URIs if present.
+     */
+    protected function prepareForValidation(): void
+    {
+        $converter = app(Base64ImageConverter::class);
+        $mergeData = [];
+
+        if ($this->file('photo')) {
+            $mergeData['photo_url'] = $converter->toDataUri($this->file('photo'));
+        }
+
+        if ($this->file('store_banner')) {
+            $mergeData['store_banner_url'] = $converter->toDataUri($this->file('store_banner'));
+        }
+
+        if (!empty($mergeData)) {
+            $this->merge($mergeData);
+        }
     }
 
     public function withValidator(Validator $validator): void

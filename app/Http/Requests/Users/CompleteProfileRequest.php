@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Users;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Src\Infrastructure\Services\Base64ImageConverter;
 
 class CompleteProfileRequest extends FormRequest
 {
@@ -35,5 +36,29 @@ class CompleteProfileRequest extends FormRequest
             'store_description' => ['nullable', 'string'],
             'store_banner' => ['nullable', 'image', 'max:5120'],
         ];
+    }
+
+    /**
+     * Prepare input data for validation and UseCases.
+     * Converts photo and store_banner files to base64 data URIs if present.
+     */
+    protected function prepareForValidation(): void
+    {
+        $converter = app(Base64ImageConverter::class);
+        $photoUrl = null;
+        $bannerUrl = null;
+
+        if ($this->file('photo')) {
+            $photoUrl = $converter->toDataUri($this->file('photo'));
+        }
+
+        if ($this->file('store_banner')) {
+            $bannerUrl = $converter->toDataUri($this->file('store_banner'));
+        }
+
+        $this->merge([
+            'photo_url' => $photoUrl,
+            'store_banner_url' => $bannerUrl,
+        ]);
     }
 }

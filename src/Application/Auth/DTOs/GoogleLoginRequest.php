@@ -6,8 +6,7 @@ namespace Src\Application\Auth\DTOs;
 
 class GoogleLoginRequest
 {
-    public function __construct(
-        public string $idToken
-    ) {
+    public function __construct(public string $idToken)
+    {
     }
 }

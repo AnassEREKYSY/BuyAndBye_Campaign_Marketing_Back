@@ -6,12 +6,13 @@ namespace App\Http\Requests\Products;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
+use Src\Infrastructure\Services\Base64ImageConverter;
 
 class UpdateProductRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return auth()->check();
     }
 
     public function rules(): array
@@ -34,6 +35,24 @@ class UpdateProductRequest extends FormRequest
             'allow_returns' => ['sometimes', 'boolean'],
             'return_days' => ['sometimes', 'integer', 'min:0'],
         ];
+    }
+
+    /**
+     * Prepare input data for validation and UseCases.
+     * Converts image files to base64 data URIs if present.
+     */
+    protected function prepareForValidation(): void
+    {
+        $converter = app(Base64ImageConverter::class);
+        $images = null;
+
+        if ($this->file('images')) {
+            $images = $converter->toDataUriList($this->file('images'));
+        }
+
+        $this->merge([
+            'images_data' => $images,
+        ]);
     }
 
     public function withValidator(Validator $validator): void

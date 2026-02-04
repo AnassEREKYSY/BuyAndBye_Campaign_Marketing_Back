@@ -16,7 +16,18 @@ class GoogleLoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'idToken' => ['required', 'string'],
+            'id_token' => ['required', 'string'],
         ];
+    }
+
+    /**
+     * Prepare input data for validation and UseCases.
+     * Normalize snake_case from request to camelCase for DTOs.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'idToken' => $this->input('id_token'),
+        ]);
     }
 }
