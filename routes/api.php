@@ -14,6 +14,7 @@ use Src\Api\V1\Controllers\Products\DeleteProductController;
 use Src\Api\V1\Controllers\Products\GetProductByIdController;
 use Src\Api\V1\Controllers\Products\GetSellerProductsController;
 use Src\Api\V1\Controllers\Products\UpdateProductController;
+use Src\Api\V1\Controllers\Users\BecomeSellerController;
 use Src\Api\V1\Controllers\Users\CompleteProfileController;
 use Src\Api\V1\Controllers\Users\GetProfileStatusController;
 use Src\Api\V1\Controllers\Users\GetUserProfileController;
@@ -44,6 +45,7 @@ Route::prefix('v1')->group(function () {
         Route::post('users/profile/complete', CompleteProfileController::class)->name('users.profile.complete');
         Route::post('users/profile/skip', SkipProfileController::class)->name('users.profile.skip');
         Route::put('users/profile', UpdateProfileController::class)->name('users.profile.update');
+        Route::post('users/become-seller', BecomeSellerController::class)->name('users.become-seller');
 
         Route::post('products/create', CreateProductController::class)->name('products.create');
         Route::get('products/get-mine', GetSellerProductsController::class)->name('products.mine');
