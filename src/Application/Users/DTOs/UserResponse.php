@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Src\Application\Users\DTOs;
+use Src\Domain\Shared\Enums\UserRole;
 
 class UserResponse
 {
@@ -10,7 +11,7 @@ class UserResponse
         public string $id,
         public string $email,
         public string $displayName,
-        public int $role,
+        public UserRole $role,
         public string $status,
         public ?string $photoUrl,
         public ?string $phoneNumber,

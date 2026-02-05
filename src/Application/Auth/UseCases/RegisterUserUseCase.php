@@ -7,18 +7,17 @@ namespace Src\Application\Auth\UseCases;
 use Src\Application\Auth\DTOs\AuthResponse;
 use Src\Application\Auth\DTOs\RegisterRequest;
 use Src\Domain\Auth\Services\AuthServiceInterface;
-use Src\Domain\Users\Exceptions\UserAlreadyExistsException;
 use Src\Domain\Users\Repositories\UserRepositoryInterface;
-use Src\Domain\Shared\Enums\AccountStatus;
+use Src\Domain\Users\Exceptions\UserAlreadyExistsException;
 use Src\Domain\Shared\Enums\UserRole;
+use Src\Domain\Shared\Enums\AccountStatus;
 
 class RegisterUserUseCase
 {
     public function __construct(
         private UserRepositoryInterface $users,
         private AuthServiceInterface $authService
-    ) {
-    }
+    ) {}
 
     public function execute(RegisterRequest $request): AuthResponse
     {
@@ -36,14 +35,13 @@ class RegisterUserUseCase
         ]);
 
         $token = $this->authService->createTokenForUserId($user->id);
-        $expiresIn = $this->authService->getTokenExpirationMinutes();
 
         return new AuthResponse(
             token: $token,
-            expiresIn: $expiresIn,
+            expiresIn: $this->authService->getTokenExpirationMinutes(),
             userId: $user->id,
-            profileStatus: $user->status,
-            isProfileComplete: $user->profileCompletedAt !== null
+            profileStatus: $user->status->value,
+            isProfileComplete: $user->status === AccountStatus::Active
         );
     }
 }

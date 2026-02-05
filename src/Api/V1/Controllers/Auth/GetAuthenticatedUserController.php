@@ -6,7 +6,7 @@ namespace Src\Api\V1\Controllers\Auth;
 
 use OpenApi\Annotations as OA;
 use Src\Api\V1\Controllers\Controller;
-use App\Http\Resources\Users\UserResource;
+use Src\Api\V1\Resources\Users\UserResource;
 use Src\Application\Auth\UseCases\GetAuthenticatedUserUseCase;
 
 /**

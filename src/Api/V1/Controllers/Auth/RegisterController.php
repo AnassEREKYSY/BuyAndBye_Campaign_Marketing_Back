@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Api\V1\Controllers\Auth;
 
-use OpenApi\Annotations as OA;
+use Illuminate\Http\JsonResponse;
 use Src\Api\V1\Controllers\Controller;
 use Src\Api\V1\Requests\Auth\RegisterRequest;
-use Src\Api\V1\Resources\Auth\AuthResource;
 use Src\Application\Auth\DTOs\RegisterRequest as RegisterDTO;
 use Src\Application\Auth\UseCases\RegisterUserUseCase;
 
@@ -41,12 +40,13 @@ use Src\Application\Auth\UseCases\RegisterUserUseCase;
  *     )
  * )
  */
+
 final class RegisterController extends Controller
 {
     public function __invoke(
         RegisterRequest $request,
         RegisterUserUseCase $useCase
-    ): AuthResource {
+    ): JsonResponse {
         $dto = new RegisterDTO(
             email: $request->validated('email'),
             password: $request->validated('password'),
@@ -54,8 +54,12 @@ final class RegisterController extends Controller
             photoUrl: $request->validated('photo_url'),
         );
 
-        $authResponse = $useCase->execute($dto);
+        $result = $useCase->execute($dto);
 
-        return new AuthResource($authResponse);
+        return response()->json([
+            'success' => true,
+            'message' => 'User registered successfully',
+            'data' => $result,
+        ], 201);
     }
 }

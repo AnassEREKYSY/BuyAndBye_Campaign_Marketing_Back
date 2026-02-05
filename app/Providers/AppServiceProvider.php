@@ -18,6 +18,9 @@ use Src\Infrastructure\Persistence\Repositories\AuthRepository;
 use Src\Domain\Auth\Services\AuthService;
 use Src\Domain\Products\Services\ProductsService;
 use Src\Domain\Users\Services\UsersService;
+use Src\Domain\Auth\Services\AuthServiceInterface;
+use Src\Domain\Users\Services\UserContextInterface;
+use Src\Infrastructure\Services\SanctumUserContext;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,8 +42,17 @@ class AppServiceProvider extends ServiceProvider
             AuthRepository::class
         );
 
+        $this->app->bind(
+            UserContextInterface::class,
+            SanctumUserContext::class
+        );
+
+        $this->app->singleton(
+            \Src\Domain\Auth\Services\AuthServiceInterface::class,
+            \Src\Domain\Auth\Services\AuthService::class
+        );
+
         // Service Bindings
-        $this->app->singleton(AuthService::class);
         $this->app->singleton(ProductsService::class);
         $this->app->singleton(UsersService::class);
     }

@@ -11,20 +11,22 @@ class UserMapper
 {
     public static function toUserResponse(User $user): UserResponse
     {
-        return new UserResponse(
+            return new UserResponse(
             id: $user->id,
             email: $user->email,
-            displayName: $user->displayName,
+            displayName: $user->displayName ?? '',
             role: $user->role,
-            status: $user->status,
+            status: $user->status->value,
             photoUrl: $user->photoUrl,
-            phoneNumber: $user->phoneNumber,
-            birthDate: $user->birthDate?->format('Y-m-d'),
-            gender: $user->gender,
-            isEmailVerified: $user->isEmailVerified,
-            isPhoneVerified: $user->isPhoneVerified,
-            locale: $user->locale,
-            countryCode: $user->countryCode
+            phoneNumber: null,
+            birthDate: null,
+            gender: null,
+
+            isEmailVerified: $user->emailVerifiedAt !== null,
+            isPhoneVerified: false,
+
+            locale: 'en',
+            countryCode: null
         );
     }
 }

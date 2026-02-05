@@ -4,9 +4,11 @@ namespace Src\Infrastructure\Persistence\Eloquent\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Str;
+use Src\Domain\Shared\Enums\UserRole;
+use Src\Domain\Shared\Enums\AccountStatus;
 
 class User extends Authenticatable
 {
@@ -21,7 +23,10 @@ class User extends Authenticatable
         'id',
         'email',
         'password',
+        'display_name',
+        'photo_url',
         'role',
+        'status',
         'profile_completed',
         'profile_skipped',
         'email_verified_at',
@@ -29,23 +34,22 @@ class User extends Authenticatable
 
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     protected $casts = [
+        'role' => UserRole::class,
+        'status' => AccountStatus::class,
         'profile_completed' => 'boolean',
         'profile_skipped' => 'boolean',
         'email_verified_at' => 'datetime',
     ];
 
-    // Relationships
-    public function auths(): HasMany
+    protected static function booted(): void
     {
-        return $this->hasMany(Auth::class, 'user_id', 'id');
-    }
-
-    public function products(): HasMany
-    {
-        return $this->hasMany(Product::class, 'seller_id', 'id');
+        static::creating(function (self $user) {
+            if (!$user->id) {
+                $user->id = (string) Str::uuid();
+            }
+        });
     }
 }

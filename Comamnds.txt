@@ -11,7 +11,7 @@ php artisan route:list
 
 ---------------------------------------------------------------------------------------------
 
-## Swagger 
+## Swagger : http://localhost:8000/api/documentation
 
 # Regenerate docs after changes
 php artisan l5-swagger:generate

@@ -10,8 +10,9 @@ use Src\Application\Auth\DTOs\LoginRequest;
 use Src\Domain\Auth\Exceptions\InvalidCredentialsException;
 use Src\Domain\Auth\Services\AuthServiceInterface;
 use Src\Domain\Users\Repositories\UserRepositoryInterface;
+use Src\Domain\Shared\Enums\AccountStatus;
 
-class LoginUserUseCase
+final class LoginUserUseCase
 {
     public function __construct(
         private UserRepositoryInterface $users,
@@ -42,8 +43,8 @@ class LoginUserUseCase
             token: $token,
             expiresIn: $expiresIn,
             userId: $user->id,
-            profileStatus: $user->status,
-            isProfileComplete: $user->profileCompletedAt !== null
+            profileStatus: $user->status->value,
+            isProfileComplete: $user->status === AccountStatus::Active
         );
     }
 }
