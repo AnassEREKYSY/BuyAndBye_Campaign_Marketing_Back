@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api\V1\Users;
 
+use App\Enums\AccountStatus;
+use App\Enums\UserRole;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
-use Src\Domain\Shared\Enums\AccountStatus;
-use Src\Domain\Shared\Enums\UserRole;
-use Src\Infrastructure\Persistence\Eloquent\Models\User;
 use Tests\TestCase;
 
 class UserProfileControllerTest extends TestCase
@@ -23,42 +23,20 @@ class UserProfileControllerTest extends TestCase
             'password' => Hash::make('password123'),
             'display_name' => 'Buyer',
             'role' => UserRole::Buyer->value,
+            'status' => AccountStatus::Incomplete->value,
         ]);
 
         Sanctum::actingAs($buyer);
 
         $response = $this->postJson('/api/v1/profile/complete', [
             'display_name' => 'Buyer Updated',
-            'buyer_categories' => ['tech'],
-            'buyer_interests' => ['collectibles'],
         ]);
 
-        $response->assertOk()->assertJsonPath('success', true);
+        $response->assertOk();
         $this->assertDatabaseHas('users', [
             'id' => $buyer->id,
             'status' => AccountStatus::Active->value,
         ]);
-    }
-
-    public function test_complete_profile_seller(): void
-    {
-        $seller = User::query()->create([
-            'email' => 'seller@example.com',
-            'password' => Hash::make('password123'),
-            'display_name' => 'Seller',
-            'role' => UserRole::Seller->value,
-        ]);
-
-        Sanctum::actingAs($seller);
-
-        $response = $this->postJson('/api/v1/profile/complete', [
-            'display_name' => 'Seller Updated',
-            'store_name' => 'Store',
-            'company_name' => 'Company',
-        ]);
-
-        $response->assertOk()->assertJsonPath('success', true);
-        $this->assertDatabaseHas('seller_profiles', ['user_id' => $seller->id]);
     }
 
     public function test_get_profile_and_status(): void
@@ -68,11 +46,12 @@ class UserProfileControllerTest extends TestCase
             'password' => Hash::make('password123'),
             'display_name' => 'Buyer',
             'role' => UserRole::Buyer->value,
+            'status' => AccountStatus::Active->value,
         ]);
 
         Sanctum::actingAs($buyer);
 
-        $this->getJson('/api/v1/profile/get-profile')->assertOk();
+        $this->getJson('/api/v1/profile')->assertOk();
         $this->getJson('/api/v1/profile/status')->assertOk();
     }
 
@@ -83,13 +62,14 @@ class UserProfileControllerTest extends TestCase
             'password' => Hash::make('password123'),
             'display_name' => 'Buyer',
             'role' => UserRole::Buyer->value,
+            'status' => AccountStatus::Incomplete->value,
         ]);
 
         Sanctum::actingAs($buyer);
 
         $response = $this->postJson('/api/v1/profile/skip');
 
-        $response->assertOk()->assertJsonPath('success', true);
+        $response->assertOk();
         $this->assertDatabaseHas('users', [
             'id' => $buyer->id,
             'status' => AccountStatus::Skipped->value,
@@ -103,15 +83,16 @@ class UserProfileControllerTest extends TestCase
             'password' => Hash::make('password123'),
             'display_name' => 'Buyer',
             'role' => UserRole::Buyer->value,
+            'status' => AccountStatus::Active->value,
         ]);
 
         Sanctum::actingAs($buyer);
 
-        $response = $this->putJson('/api/v1/profile/update', [
+        $response = $this->putJson('/api/v1/profile', [
             'display_name' => 'Buyer Updated',
         ]);
 
-        $response->assertOk()->assertJsonPath('success', true);
+        $response->assertOk();
         $this->assertDatabaseHas('users', [
             'id' => $buyer->id,
             'display_name' => 'Buyer Updated',

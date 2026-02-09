@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use Src\Domain\Products\Entities\Product;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\Product;
+use App\Models\User;
 
 class ProductPolicy
 {
-    public function view(Authenticatable $user, Product $product): bool
+    public function view(User $user, Product $product): bool
     {
         if ($user->role->isAdmin()) {
             return true;
@@ -19,15 +19,15 @@ class ProductPolicy
             return false;
         }
 
-        return (string) $product->sellerId() === (string) $user->id;
+        return $product->seller_id === $user->id;
     }
 
-    public function update(Authenticatable $user, Product $product): bool
+    public function update(User $user, Product $product): bool
     {
         return $this->view($user, $product);
     }
 
-    public function delete(Authenticatable $user, Product $product): bool
+    public function delete(User $user, Product $product): bool
     {
         return $this->view($user, $product);
     }

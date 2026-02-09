@@ -12,121 +12,13 @@
         }
     ],
     "paths": {
-        "/api/v1/auth/me": {
-            "get": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Get authenticated user",
-                "description": "Returns the currently authenticated user",
-                "operationId": "042579fab07caa1b84c52edecf00f659",
-                "responses": {
-                    "200": {
-                        "description": "Authenticated user returned"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/auth/login": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Login with email and password",
-                "description": "Authenticates a user using email and password and returns an auth token",
-                "operationId": "43fb94ca90bbf5bcef1efc09d3ecbca4",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "email",
-                                    "password"
-                                ],
-                                "properties": {
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email"
-                                    },
-                                    "password": {
-                                        "type": "string",
-                                        "format": "password"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Authenticated successfully"
-                    },
-                    "401": {
-                        "description": "Invalid credentials"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                }
-            }
-        },
-        "/api/v1/auth/google": {
-            "post": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Login with Google",
-                "description": "Authenticates a user using a Google ID token",
-                "operationId": "62f6ac5c98fb5a20049d0d0aa7fa9dcd",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "idToken"
-                                ],
-                                "properties": {
-                                    "idToken": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Authenticated successfully via Google"
-                    },
-                    "401": {
-                        "description": "Invalid Google token"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                }
-            }
-        },
         "/api/v1/auth/register": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "Register a new user",
-                "description": "Creates a new user account and returns an auth token",
-                "operationId": "a23c054126105e659ca05606c07238ae",
+                "operationId": "b9e746d77661fb8df55d0ac63e1ece77",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -172,14 +64,118 @@
                 }
             }
         },
-        "/api/v1/products/create": {
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login with email and password",
+                "operationId": "a7997e7c1e3bfed64d4e56de82415931",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated successfully"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get authenticated user",
+                "operationId": "37d33f0281f67d31d05b4c45eea0143b",
+                "responses": {
+                    "200": {
+                        "description": "Authenticated user returned"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get seller products",
+                "operationId": "1ce27f90dd8c39cea9520bf45d58c7c2",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Products list retrieved"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
                     "Products"
                 ],
                 "summary": "Create a new product",
-                "description": "Create a new product (seller or admin only)",
-                "operationId": "d021e720a954732a9b29f53e6d68f66a",
+                "operationId": "acaa0d3fdc74fd4b534e70fc016cf7f1",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -187,69 +183,37 @@
                             "schema": {
                                 "required": [
                                     "title",
-                                    "description",
-                                    "category_id",
                                     "condition",
                                     "price",
-                                    "stock_quantity"
+                                    "stock_quantity",
+                                    "is_digital",
+                                    "allow_returns",
+                                    "return_days"
                                 ],
                                 "properties": {
                                     "title": {
-                                        "type": "string",
-                                        "example": "iPhone 15 Pro"
+                                        "type": "string"
                                     },
                                     "description": {
-                                        "type": "string",
-                                        "example": "Brand new iPhone"
-                                    },
-                                    "category_id": {
-                                        "type": "string",
-                                        "example": "electronics"
+                                        "type": "string"
                                     },
                                     "condition": {
-                                        "type": "string",
-                                        "example": "new"
+                                        "type": "string"
                                     },
                                     "price": {
-                                        "type": "number",
-                                        "format": "float",
-                                        "example": 1299.99
+                                        "type": "number"
                                     },
                                     "stock_quantity": {
-                                        "type": "integer",
-                                        "example": 10
-                                    },
-                                    "images_data": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "tags": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "weight_kg": {
-                                        "type": "number",
-                                        "example": 0.45
-                                    },
-                                    "sku": {
-                                        "type": "string",
-                                        "example": "IP15-PRO-001"
+                                        "type": "integer"
                                     },
                                     "is_digital": {
-                                        "type": "boolean",
-                                        "example": false
+                                        "type": "boolean"
                                     },
                                     "allow_returns": {
-                                        "type": "boolean",
-                                        "example": true
+                                        "type": "boolean"
                                     },
                                     "return_days": {
-                                        "type": "integer",
-                                        "example": 14
+                                        "type": "integer"
                                     }
                                 },
                                 "type": "object"
@@ -259,7 +223,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Product created successfully"
+                        "description": "Product created"
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -275,59 +239,17 @@
                 ]
             }
         },
-        "/api/v1/products/delete/{productId}": {
-            "delete": {
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Delete a product",
-                "description": "Delete a product by ID (owner or admin only)",
-                "operationId": "b0c71435cd799c65500264bf7d9f0d5f",
-                "parameters": [
-                    {
-                        "name": "productId",
-                        "in": "path",
-                        "description": "Product ID",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Product deleted successfully"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Product not found"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/products/get-one/{productId}": {
+        "/api/v1/products/{product}": {
             "get": {
                 "tags": [
                     "Products"
                 ],
                 "summary": "Get product by ID",
-                "description": "Retrieve a product by its ID",
-                "operationId": "fadaf91178307e6c9f3ace410086c54a",
+                "operationId": "9d6564b9647b6b46ca1d3eb86c51643e",
                 "parameters": [
                     {
-                        "name": "productId",
+                        "name": "product",
                         "in": "path",
-                        "description": "Product ID",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -336,51 +258,10 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Product retrieved successfully"
+                        "description": "Product retrieved"
                     },
                     "404": {
                         "description": "Product not found"
-                    }
-                }
-            }
-        },
-        "/api/v1/products/get-mine": {
-            "get": {
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Get seller products",
-                "description": "Retrieve paginated list of products for authenticated seller",
-                "operationId": "d20155633c1b0d558aa0249dd3409b7a",
-                "parameters": [
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "description": "Page number",
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    },
-                    {
-                        "name": "pageSize",
-                        "in": "query",
-                        "description": "Items per page",
-                        "schema": {
-                            "type": "integer",
-                            "example": 20
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Products list retrieved successfully"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
                     }
                 },
                 "security": [
@@ -388,21 +269,17 @@
                         "bearerAuth": []
                     }
                 ]
-            }
-        },
-        "/api/v1/products/update/{productId}": {
+            },
             "put": {
                 "tags": [
                     "Products"
                 ],
                 "summary": "Update a product",
-                "description": "Update an existing product",
-                "operationId": "909b049a5e8182887ebb58b1973df855",
+                "operationId": "10db88cc185f628118bfa9a84d1401bb",
                 "parameters": [
                     {
-                        "name": "productId",
+                        "name": "product",
                         "in": "path",
-                        "description": "Product ID",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -421,45 +298,8 @@
                                     "description": {
                                         "type": "string"
                                     },
-                                    "category_id": {
-                                        "type": "string"
-                                    },
-                                    "condition": {
-                                        "type": "string"
-                                    },
                                     "price": {
-                                        "type": "number",
-                                        "format": "float"
-                                    },
-                                    "stock_quantity": {
-                                        "type": "integer"
-                                    },
-                                    "images_data": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "tags": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "weight_kg": {
                                         "type": "number"
-                                    },
-                                    "sku": {
-                                        "type": "string"
-                                    },
-                                    "is_digital": {
-                                        "type": "boolean"
-                                    },
-                                    "allow_returns": {
-                                        "type": "boolean"
-                                    },
-                                    "return_days": {
-                                        "type": "integer"
                                     }
                                 },
                                 "type": "object"
@@ -469,7 +309,43 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Product updated successfully"
+                        "description": "Product updated"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Delete a product",
+                "operationId": "dc780252f855e97451083ce643a83174",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product deleted"
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -488,172 +364,13 @@
                 ]
             }
         },
-        "/api/v1/users/profile/complete": {
-            "post": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Complete user profile",
-                "description": "Complete buyer or seller profile information",
-                "operationId": "442186606505ba278d6f9ab90dad6c3a",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "display_name": {
-                                        "type": "string",
-                                        "example": "John Doe"
-                                    },
-                                    "phone_number": {
-                                        "type": "string",
-                                        "example": "+33612345678"
-                                    },
-                                    "birth_date": {
-                                        "type": "string",
-                                        "format": "date",
-                                        "example": "1995-08-15"
-                                    },
-                                    "gender": {
-                                        "type": "string",
-                                        "example": "male"
-                                    },
-                                    "country_code": {
-                                        "type": "string",
-                                        "example": "FR"
-                                    },
-                                    "locale": {
-                                        "type": "string",
-                                        "example": "fr-FR"
-                                    },
-                                    "photo_url": {
-                                        "type": "string",
-                                        "example": "https://cdn.app/avatar.jpg"
-                                    },
-                                    "buyer_categories": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "buyer_interests": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "payment_methods": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "store_name": {
-                                        "type": "string",
-                                        "example": "My Store"
-                                    },
-                                    "company_name": {
-                                        "type": "string",
-                                        "example": "My Company"
-                                    },
-                                    "vat_number": {
-                                        "type": "string",
-                                        "example": "FR123456789"
-                                    },
-                                    "support_email": {
-                                        "type": "string",
-                                        "example": "support@store.com"
-                                    },
-                                    "support_phone": {
-                                        "type": "string",
-                                        "example": "+33123456789"
-                                    },
-                                    "category_tags": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "store_description": {
-                                        "type": "string"
-                                    },
-                                    "store_banner_url": {
-                                        "type": "string",
-                                        "example": "https://cdn.app/banner.jpg"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Profile completed successfully"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/users/profile/status": {
-            "get": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Get profile completion status",
-                "description": "Returns profile completion status",
-                "operationId": "b780031123e9691f68ca09ed4b8fcf4c",
-                "responses": {
-                    "200": {
-                        "description": "Profile status retrieved",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "completed"
-                                        },
-                                        "isProfileComplete": {
-                                            "type": "boolean",
-                                            "example": true
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/users/profile": {
+        "/api/v1/profile": {
             "get": {
                 "tags": [
                     "Users"
                 ],
                 "summary": "Get user profile",
-                "description": "Retrieve authenticated user profile",
-                "operationId": "ccf06856069bfd8ddcb851c8804d4757",
+                "operationId": "2637b083b4783df48b3934b7b6c35533",
                 "responses": {
                     "200": {
                         "description": "Profile retrieved successfully"
@@ -673,8 +390,7 @@
                     "Users"
                 ],
                 "summary": "Update user profile",
-                "description": "Update user profile fields",
-                "operationId": "b4d0291e54ddc33983367c63207703da",
+                "operationId": "f4148d13ac4030412a4253df0f327176",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -687,65 +403,7 @@
                                     "phone_number": {
                                         "type": "string"
                                     },
-                                    "birth_date": {
-                                        "type": "string",
-                                        "format": "date"
-                                    },
-                                    "gender": {
-                                        "type": "string"
-                                    },
-                                    "country_code": {
-                                        "type": "string"
-                                    },
-                                    "locale": {
-                                        "type": "string"
-                                    },
                                     "photo_url": {
-                                        "type": "string"
-                                    },
-                                    "buyer_categories": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "buyer_interests": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "payment_methods": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "store_name": {
-                                        "type": "string"
-                                    },
-                                    "company_name": {
-                                        "type": "string"
-                                    },
-                                    "vat_number": {
-                                        "type": "string"
-                                    },
-                                    "support_email": {
-                                        "type": "string"
-                                    },
-                                    "support_phone": {
-                                        "type": "string"
-                                    },
-                                    "category_tags": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "store_description": {
-                                        "type": "string"
-                                    },
-                                    "store_banner_url": {
                                         "type": "string"
                                     }
                                 },
@@ -772,17 +430,141 @@
                 ]
             }
         },
-        "/api/v1/users/profile/skip": {
+        "/api/v1/profile/status": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get profile completion status",
+                "operationId": "7b2b6478382fddef5335e194e2f5af53",
+                "responses": {
+                    "200": {
+                        "description": "Profile status retrieved"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/profile/complete": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Complete user profile",
+                "operationId": "5aba3f3a32dc7906d515f2cbc29d572a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "display_name": {
+                                        "type": "string"
+                                    },
+                                    "phone_number": {
+                                        "type": "string"
+                                    },
+                                    "birth_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "country_code": {
+                                        "type": "string"
+                                    },
+                                    "locale": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile completed successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/profile/skip": {
             "post": {
                 "tags": [
                     "Users"
                 ],
                 "summary": "Skip profile completion",
-                "description": "Skip profile completion step",
-                "operationId": "bca8ba529fdcb254d49f132637ffa8df",
+                "operationId": "f4592e1bca4055ed7f63d5ca833b89eb",
                 "responses": {
                     "200": {
                         "description": "Profile skipped successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/become-seller": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Become a seller",
+                "operationId": "1a23421adb6a86d7e5c1c5137ed0818f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "store_name",
+                                    "country_code"
+                                ],
+                                "properties": {
+                                    "store_name": {
+                                        "type": "string"
+                                    },
+                                    "country_code": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Seller account activated"
+                    },
+                    "400": {
+                        "description": "Invalid role transition"
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -808,15 +590,15 @@
     "tags": [
         {
             "name": "Auth",
-            "description": "Auth"
+            "description": "Authentication endpoints"
         },
         {
             "name": "Products",
-            "description": "Products"
+            "description": "Product management endpoints"
         },
         {
             "name": "Users",
-            "description": "Users"
+            "description": "User profile endpoints"
         }
     ]
 }

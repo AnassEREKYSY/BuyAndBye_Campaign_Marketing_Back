@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api\V1\Products;
 
+use App\Enums\AccountStatus;
+use App\Enums\ProductStatus;
+use App\Enums\UserRole;
+use App\Models\Product;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
-use Src\Domain\Shared\Enums\ProductStatus;
-use Src\Domain\Shared\Enums\UserRole;
-use Src\Infrastructure\Persistence\Eloquent\Models\Product;
-use Src\Infrastructure\Persistence\Eloquent\Models\User;
 use Tests\TestCase;
 
 class ProductsControllerTest extends TestCase
@@ -24,11 +25,12 @@ class ProductsControllerTest extends TestCase
             'password' => Hash::make('password123'),
             'display_name' => 'Seller',
             'role' => UserRole::Seller->value,
+            'status' => AccountStatus::Active->value,
         ]);
 
         Sanctum::actingAs($seller);
 
-        $response = $this->postJson('/api/v1/products/create', [
+        $response = $this->postJson('/api/v1/products', [
             'title' => 'Product',
             'condition' => 'New',
             'price' => 10,
@@ -38,7 +40,7 @@ class ProductsControllerTest extends TestCase
             'return_days' => 30,
         ]);
 
-        $response->assertOk()->assertJsonPath('success', true);
+        $response->assertCreated();
         $this->assertDatabaseHas('products', ['title' => 'Product']);
     }
 
@@ -49,11 +51,12 @@ class ProductsControllerTest extends TestCase
             'password' => Hash::make('password123'),
             'display_name' => 'Buyer',
             'role' => UserRole::Buyer->value,
+            'status' => AccountStatus::Active->value,
         ]);
 
         Sanctum::actingAs($buyer);
 
-        $response = $this->postJson('/api/v1/products/create', [
+        $response = $this->postJson('/api/v1/products', [
             'title' => 'Product',
             'condition' => 'New',
             'price' => 10,
@@ -73,6 +76,7 @@ class ProductsControllerTest extends TestCase
             'password' => Hash::make('password123'),
             'display_name' => 'Seller',
             'role' => UserRole::Seller->value,
+            'status' => AccountStatus::Active->value,
         ]);
 
         Product::query()->create([
@@ -86,7 +90,7 @@ class ProductsControllerTest extends TestCase
 
         Sanctum::actingAs($seller);
 
-        $this->getJson('/api/v1/products/get-mine')->assertOk();
+        $this->getJson('/api/v1/products')->assertOk();
     }
 
     public function test_get_product_by_id(): void
@@ -96,6 +100,7 @@ class ProductsControllerTest extends TestCase
             'password' => Hash::make('password123'),
             'display_name' => 'Seller',
             'role' => UserRole::Seller->value,
+            'status' => AccountStatus::Active->value,
         ]);
 
         $product = Product::query()->create([
@@ -107,7 +112,9 @@ class ProductsControllerTest extends TestCase
             'stock_quantity' => 5,
         ]);
 
-        $this->getJson('/api/v1/products/get-by-id/' . $product->id)->assertOk();
+        Sanctum::actingAs($seller);
+
+        $this->getJson('/api/v1/products/'.$product->id)->assertOk();
     }
 
     public function test_update_product_owner_only(): void
@@ -117,6 +124,7 @@ class ProductsControllerTest extends TestCase
             'password' => Hash::make('password123'),
             'display_name' => 'Seller',
             'role' => UserRole::Seller->value,
+            'status' => AccountStatus::Active->value,
         ]);
 
         $product = Product::query()->create([
@@ -130,7 +138,7 @@ class ProductsControllerTest extends TestCase
 
         Sanctum::actingAs($seller);
 
-        $response = $this->putJson('/api/v1/products/update/' . $product->id, [
+        $response = $this->putJson('/api/v1/products/'.$product->id, [
             'title' => 'Updated',
         ]);
 
@@ -145,6 +153,7 @@ class ProductsControllerTest extends TestCase
             'password' => Hash::make('password123'),
             'display_name' => 'Seller',
             'role' => UserRole::Seller->value,
+            'status' => AccountStatus::Active->value,
         ]);
 
         $product = Product::query()->create([
@@ -158,18 +167,9 @@ class ProductsControllerTest extends TestCase
 
         Sanctum::actingAs($seller);
 
-        $response = $this->deleteJson('/api/v1/products/delete/' . $product->id);
+        $response = $this->deleteJson('/api/v1/products/'.$product->id);
 
         $response->assertOk();
-        $this->assertDatabaseHas('products', ['id' => $product->id, 'is_deleted' => true]);
+        $this->assertSoftDeleted('products', ['id' => $product->id]);
     }
-}
-<?php
-
-namespace Tests\Feature\Api\V1\Products;
-
-use Tests\TestCase;
-
-class ProductsControllerTest extends TestCase
-{
 }
