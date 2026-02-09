@@ -30,4 +30,14 @@ class Product
         public ?DateTimeImmutable $publishedAt = null
     ) {
     }
+
+    public function id(): string
+    {
+        return $this->id;
+    }
+
+    public function sellerId(): string
+    {
+        return $this->sellerId;
+    }
 }

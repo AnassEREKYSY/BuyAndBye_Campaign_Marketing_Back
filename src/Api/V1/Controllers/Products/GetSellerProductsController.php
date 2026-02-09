@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Src\Api\V1\Controllers\Products;
 
-use Src\Api\V1\Controllers\Controller;
-use Src\Api\V1\Resources\Products\ProductsResource;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
+use Src\Api\V1\Controllers\Controller;
+use Src\Api\V1\Resources\Products\PagedProductsResource;
 use Src\Application\Products\UseCases\GetSellerProductsUseCase;
 
 /**
@@ -38,10 +39,9 @@ use Src\Application\Products\UseCases\GetSellerProductsUseCase;
  *     @OA\Response(response=403, description="Forbidden")
  * )
  */
-
 class GetSellerProductsController extends Controller
 {
-    public function __invoke(GetSellerProductsUseCase $useCase): ProductsResource
+    public function __invoke(GetSellerProductsUseCase $useCase): JsonResource
     {
         Gate::authorize('seller-or-admin');
 
@@ -49,6 +49,6 @@ class GetSellerProductsController extends Controller
         $pageSize = (int) request()->query('pageSize', 20);
         $paged = $useCase->execute($page, $pageSize);
 
-        return new ProductsResource($paged);
+        return new PagedProductsResource($paged);
     }
 }

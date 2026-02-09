@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Application\Products\UseCases;
 
-use Src\Application\Products\DTOs\ProductResponse;
-use Src\Application\Products\Mappers\ProductMapper;
+use Src\Domain\Products\Entities\Product;
 use Src\Domain\Products\Exceptions\ProductNotFoundException;
 use Src\Domain\Products\Repositories\ProductRepositoryInterface;
 
@@ -16,14 +15,14 @@ class GetProductByIdUseCase
     ) {
     }
 
-    public function execute(string $productId): ProductResponse
+    public function execute(string $productId): Product
     {
         $product = $this->products->findById($productId);
 
-        if (!$product) {
+        if (! $product) {
             throw ProductNotFoundException::forId($productId);
         }
 
-        return ProductMapper::toProductResponse($product);
+        return $product;
     }
 }

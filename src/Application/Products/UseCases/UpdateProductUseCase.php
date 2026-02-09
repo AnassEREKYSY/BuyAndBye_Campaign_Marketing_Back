@@ -38,7 +38,8 @@ class UpdateProductUseCase
             'is_digital' => $request->isDigital,
             'allow_returns' => $request->allowReturns,
             'return_days' => $request->returnDays,
-        ], static fn ($value): bool => $value !== null));
+        ], static fn ($v) => $v !== null));
+        
 
         return ProductMapper::toProductResponse($product);
     }

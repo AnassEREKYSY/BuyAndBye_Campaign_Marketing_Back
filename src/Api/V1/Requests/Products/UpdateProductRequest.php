@@ -26,6 +26,7 @@ class UpdateProductRequest extends FormRequest
             'condition' => ['sometimes', 'string', 'in:New,LikeNew,VeryGood,Good,Acceptable'],
             'price' => ['sometimes', 'numeric', 'min:0'],
             'stock_quantity' => ['sometimes', 'integer', 'min:0'],
+            'stockQuantity' => ['sometimes', 'integer', 'min:0'],
             'images' => ['sometimes', 'array'],
             'images.*' => ['image', 'max:5120'],
             'tags' => ['sometimes', 'nullable', 'array'],
@@ -37,10 +38,6 @@ class UpdateProductRequest extends FormRequest
         ];
     }
 
-    /**
-     * Prepare input data for validation and UseCases.
-     * Converts image files to base64 data URIs if present.
-     */
     protected function prepareForValidation(): void
     {
         $converter = app(Base64ImageConverter::class);
@@ -52,13 +49,15 @@ class UpdateProductRequest extends FormRequest
 
         $this->merge([
             'images_data' => $images,
+            'stock_quantity' => $this->input('stock_quantity', $this->input('stockQuantity')),
         ]);
     }
 
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
-            if (count($this->all()) === 0) {
+            $payload = $this->except(['images', 'images_data']);
+            if (count($payload) === 0 && $this->images_data === null) {
                 $validator->errors()->add('fields', 'At least one field must be provided.');
             }
         });

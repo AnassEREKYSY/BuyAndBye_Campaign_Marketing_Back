@@ -19,7 +19,7 @@ class UpdateProductRequest
         public ?string $sku = null,
         public ?bool $isDigital = null,
         public ?bool $allowReturns = null,
-        public ?int $returnDays = null
+        public ?int $returnDays = null,
     ) {
     }
 }

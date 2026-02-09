@@ -43,13 +43,3 @@ class CreateProductUseCase
         return ProductMapper::toProductResponse($product);
     }
 }
-<?php
-
-namespace Src\Application\Products\UseCases;
-
-class CreateProductUseCase
-{
-    public function __invoke(): void
-    {
-    }
-}
