@@ -15,13 +15,17 @@ class UserResource extends JsonResource
         $user = $this->resource;
 
         return [
-            'id' => $user->id,
-            'email' => $user->email,
-            'displayName' => $user->display_name,
-            'role' => $user->role->value,
-            'status' => $user->status->value,
-            'photoUrl' => $user->photo_url,
-            'isEmailVerified' => $user->email_verified_at !== null,
+            'id' => $this->id,
+            'email' => $this->email,
+            'display_name' => $this->display_name,
+            'photo_url' => $this->photo_url,
+            'role' => $this->role,
+            'status' => $this->status,
+            'profile_completed' => $this->profile_completed,
+            'profile_skipped' => $this->profile_skipped,
+            'email_verified_at' => $this->email_verified_at,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

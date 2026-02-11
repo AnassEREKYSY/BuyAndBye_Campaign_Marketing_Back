@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Application\DTOs\Profile\BecomeSellerDTO;
+use App\Application\DTOs\Profile\CompleteProfileDTO;
+use App\Application\DTOs\Profile\UpdateProfileDTO;
+use App\Application\UseCases\Profile\BecomeSellerUseCase;
+use App\Application\UseCases\Profile\CompleteProfileUseCase;
+use App\Application\UseCases\Profile\SkipProfileUseCase;
+use App\Application\UseCases\Profile\UpdateProfileUseCase;
 use App\Enums\AccountStatus;
-use App\Enums\UserRole;
-use App\Exceptions\InvalidRoleTransitionException;
-use App\Exceptions\UserAlreadySellerException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BecomeSellerRequest;
 use App\Http\Requests\CompleteProfileRequest;
@@ -25,10 +29,7 @@ class UserController extends Controller
 {
     private function user(): User
     {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
+        return Auth::user();
     }
 
     /**
@@ -37,7 +38,6 @@ class UserController extends Controller
      *     tags={"Users"},
      *     summary="Get user profile",
      *     security={{"bearerAuth":{}}},
-     *
      *     @OA\Response(response=200, description="Profile retrieved successfully"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
@@ -53,7 +53,6 @@ class UserController extends Controller
      *     tags={"Users"},
      *     summary="Get profile completion status",
      *     security={{"bearerAuth":{}}},
-     *
      *     @OA\Response(response=200, description="Profile status retrieved"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
@@ -74,38 +73,28 @@ class UserController extends Controller
      *     tags={"Users"},
      *     summary="Complete user profile",
      *     security={{"bearerAuth":{}}},
-     *
      *     @OA\RequestBody(
      *         required=true,
-     *
      *         @OA\JsonContent(
-     *
      *             @OA\Property(property="display_name", type="string"),
-     *             @OA\Property(property="phone_number", type="string"),
-     *             @OA\Property(property="birth_date", type="string", format="date"),
-     *             @OA\Property(property="gender", type="string"),
-     *             @OA\Property(property="country_code", type="string"),
-     *             @OA\Property(property="locale", type="string")
+     *             @OA\Property(property="photo_url", type="string")
      *         )
      *     ),
-     *
      *     @OA\Response(response=200, description="Profile completed successfully"),
      *     @OA\Response(response=401, description="Unauthorized"),
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function complete(CompleteProfileRequest $request): JsonResponse
-    {
-        $user = $this->user();
-        $validated = $request->validated();
+    public function complete(
+        CompleteProfileRequest $request,
+        CompleteProfileUseCase $useCase
+    ): JsonResponse {
+        $dto = new CompleteProfileDTO(
+            displayName: $request->display_name,
+            photoUrl: $request->photo_url
+        );
 
-        $user->update([
-            'display_name' => $validated['display_name'],
-            'photo_url' => $validated['photo_url'] ?? $user->photo_url,
-            'profile_completed' => true,
-            'profile_skipped' => false,
-            'status' => AccountStatus::Active->value,
-        ]);
+        $useCase->execute($this->user(), $dto);
 
         return response()->json(['message' => 'Profile completed successfully']);
     }
@@ -116,36 +105,28 @@ class UserController extends Controller
      *     tags={"Users"},
      *     summary="Update user profile",
      *     security={{"bearerAuth":{}}},
-     *
      *     @OA\RequestBody(
      *         required=true,
-     *
      *         @OA\JsonContent(
-     *
      *             @OA\Property(property="display_name", type="string"),
-     *             @OA\Property(property="phone_number", type="string"),
      *             @OA\Property(property="photo_url", type="string")
      *         )
      *     ),
-     *
      *     @OA\Response(response=200, description="Profile updated successfully"),
      *     @OA\Response(response=401, description="Unauthorized"),
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function update(UpdateProfileRequest $request): JsonResponse
-    {
-        $user = $this->user();
-        $validated = $request->validated();
+    public function update(
+        UpdateProfileRequest $request,
+        UpdateProfileUseCase $useCase
+    ): JsonResponse {
+        $dto = new UpdateProfileDTO(
+            displayName: $request->display_name,
+            photoUrl: $request->photo_url
+        );
 
-        $updateData = array_filter([
-            'display_name' => $validated['display_name'] ?? null,
-            'photo_url' => $validated['photo_url'] ?? null,
-        ], fn ($value) => $value !== null);
-
-        if (! empty($updateData)) {
-            $user->update($updateData);
-        }
+        $useCase->execute($this->user(), $dto);
 
         return response()->json(['message' => 'Profile updated successfully']);
     }
@@ -156,19 +137,14 @@ class UserController extends Controller
      *     tags={"Users"},
      *     summary="Skip profile completion",
      *     security={{"bearerAuth":{}}},
-     *
      *     @OA\Response(response=200, description="Profile skipped successfully"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
-    public function skip(): JsonResponse
-    {
-        $user = $this->user();
-
-        $user->update([
-            'profile_skipped' => true,
-            'status' => AccountStatus::Skipped->value,
-        ]);
+    public function skip(
+        SkipProfileUseCase $useCase
+    ): JsonResponse {
+        $useCase->execute($this->user());
 
         return response()->json(['message' => 'Profile skipped successfully']);
     }
@@ -179,41 +155,29 @@ class UserController extends Controller
      *     tags={"Users"},
      *     summary="Become a seller",
      *     security={{"bearerAuth":{}}},
-     *
      *     @OA\RequestBody(
      *         required=true,
-     *
      *         @OA\JsonContent(
      *             required={"store_name", "country_code"},
-     *
      *             @OA\Property(property="store_name", type="string"),
      *             @OA\Property(property="country_code", type="string")
      *         )
      *     ),
-     *
      *     @OA\Response(response=200, description="Seller account activated"),
      *     @OA\Response(response=400, description="Invalid role transition"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
-    public function becomeSeller(BecomeSellerRequest $request): JsonResponse
-    {
-        $user = $this->user();
+    public function becomeSeller(
+        BecomeSellerRequest $request,
+        BecomeSellerUseCase $useCase
+    ): JsonResponse {
+        $dto = new BecomeSellerDTO(
+            storeName: $request->store_name,
+            countryCode: $request->country_code
+        );
 
-        if ($user->role === UserRole::Seller) {
-            throw UserAlreadySellerException::forUser($user->id);
-        }
-
-        if ($user->role !== UserRole::Buyer) {
-            throw InvalidRoleTransitionException::fromRole($user->role);
-        }
-
-        $user->update([
-            'role' => UserRole::Seller->value,
-            'status' => AccountStatus::Incomplete->value,
-            'profile_completed' => false,
-            'profile_skipped' => false,
-        ]);
+        $useCase->execute($this->user(), $dto);
 
         return response()->json([
             'success' => true,
