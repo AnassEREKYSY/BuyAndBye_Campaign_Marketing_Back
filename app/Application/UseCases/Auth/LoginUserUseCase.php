@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\UseCases;
+namespace App\Application\UseCases\Auth; 
 
 
 use App\Application\Dtos\Auth\LoginUserDTO; 
