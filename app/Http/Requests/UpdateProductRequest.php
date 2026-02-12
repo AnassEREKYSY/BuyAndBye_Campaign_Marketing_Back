@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Services\Base64ImageConverter;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -37,24 +36,6 @@ class UpdateProductRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation(): void
-    {
-        $converter = app(Base64ImageConverter::class);
-        $mergeData = [];
-
-        if ($this->file('images')) {
-            $mergeData['images_data'] = $converter->toDataUriList($this->file('images'));
-        }
-
-        $stockQuantity = $this->input('stock_quantity') ?? $this->input('stockQuantity');
-        if ($stockQuantity !== null) {
-            $mergeData['stock_quantity'] = $stockQuantity;
-        }
-
-        if (! empty($mergeData)) {
-            $this->merge($mergeData);
-        }
-    }
 
     public function withValidator(Validator $validator): void
     {

@@ -29,12 +29,15 @@ class AuthController extends Controller
      *     summary="Register a new user",
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             required={"email","password","display_name"},
-     *             @OA\Property(property="email", type="string", format="email"),
-     *             @OA\Property(property="password", type="string", format="password"),
-     *             @OA\Property(property="display_name", type="string"),
-     *             @OA\Property(property="photo_url", type="string", nullable=true)
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"email","password","display_name"},
+     *                 @OA\Property(property="email", type="string", format="email"),
+     *                 @OA\Property(property="password", type="string"),
+     *                 @OA\Property(property="display_name", type="string"),
+     *                 @OA\Property(property="photo", type="string", format="binary")
+     *             )
      *         )
      *     ),
      *     @OA\Response(response=201, description="User registered successfully"),
@@ -50,7 +53,7 @@ class AuthController extends Controller
             email: $request->email,
             password: $request->password,
             displayName: $request->display_name,
-            photoUrl: $request->photo_url
+            photo: $request->file('photo')
         );
 
         [$user, $token] = $useCase->execute($dto);
@@ -104,6 +107,11 @@ class AuthController extends Controller
      */
     public function me(): UserResource
     {
-        return new UserResource(Auth::user());
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+    
+        $user->load(['profile', 'sellerProfile']);
+    
+        return new UserResource($user);
     }
 }

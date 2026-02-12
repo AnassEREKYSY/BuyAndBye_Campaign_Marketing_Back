@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Services\Base64ImageConverter;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateProductRequest extends FormRequest
@@ -32,19 +31,5 @@ class CreateProductRequest extends FormRequest
             'allow_returns' => ['required', 'boolean'],
             'return_days' => ['required', 'integer', 'min:0'],
         ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $converter = app(Base64ImageConverter::class);
-        $images = null;
-
-        if ($this->file('images')) {
-            $images = $converter->toDataUriList($this->file('images'));
-        }
-
-        $this->merge([
-            'images_data' => $images,
-        ]);
     }
 }

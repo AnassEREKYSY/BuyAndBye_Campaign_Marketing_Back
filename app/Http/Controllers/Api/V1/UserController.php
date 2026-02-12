@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Application\DTOs\Profile\BecomeSellerDTO;
-use App\Application\DTOs\Profile\CompleteProfileDTO;
-use App\Application\DTOs\Profile\UpdateProfileDTO;
+use App\Application\Dtos\Profile\BecomeSellerDTO;
+use App\Application\Dtos\Profile\CompleteProfileDTO;
+use App\Application\Dtos\Profile\UpdateUserProfileDTO;
+use App\Application\Dtos\Profile\UpdateSellerProfileDTO;
 use App\Application\UseCases\Profile\BecomeSellerUseCase;
 use App\Application\UseCases\Profile\CompleteProfileUseCase;
-use App\Application\UseCases\Profile\SkipProfileUseCase;
-use App\Application\UseCases\Profile\UpdateProfileUseCase;
+use App\Application\UseCases\Profile\UpdateUserProfileUseCase;
+use App\Application\UseCases\Profile\UpdateSellerProfileUseCase;
 use App\Enums\AccountStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BecomeSellerRequest;
 use App\Http\Requests\CompleteProfileRequest;
-use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\UpdateUserProfileRequest;
+use App\Http\Requests\UpdateSellerProfileRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -23,7 +25,10 @@ use Illuminate\Support\Facades\Auth;
 use OpenApi\Annotations as OA;
 
 /**
- * @OA\Tag(name="Users", description="User profile endpoints")
+ * @OA\Tag(
+ *     name="Users",
+ *     description="User profile & seller profile management"
+ * )
  */
 class UserController extends Controller
 {
@@ -34,22 +39,24 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/profile",
+     *     path="/api/v1/users/profile/get",
      *     tags={"Users"},
-     *     summary="Get user profile",
+     *     summary="Get current authenticated user profile",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Profile retrieved successfully"),
+     *     @OA\Response(response=200, description="User profile retrieved"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
     public function show(): UserResource
     {
-        return new UserResource($this->user());
+        return new UserResource(
+            $this->user()->load(['profile', 'sellerProfile'])
+        );
     }
 
     /**
      * @OA\Get(
-     *     path="/api/v1/profile/status",
+     *     path="/api/v1/users/profile/status/get",
      *     tags={"Users"},
      *     summary="Get profile completion status",
      *     security={{"bearerAuth":{}}},
@@ -63,26 +70,25 @@ class UserController extends Controller
 
         return response()->json([
             'status' => $user->status->value,
-            'isProfileComplete' => $user->status === AccountStatus::Active,
+            'is_profile_complete' => $user->status === AccountStatus::Active,
         ]);
     }
 
     /**
      * @OA\Post(
-     *     path="/api/v1/profile/complete",
+     *     path="/api/v1/users/profile/complete",
      *     tags={"Users"},
-     *     summary="Complete user profile",
+     *     summary="Complete minimal profile information",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
+     *             required={"display_name"},
      *             @OA\Property(property="display_name", type="string"),
-     *             @OA\Property(property="photo_url", type="string")
+     *             @OA\Property(property="photo_url", type="string", nullable=true)
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Profile completed successfully"),
-     *     @OA\Response(response=401, description="Unauthorized"),
-     *     @OA\Response(response=422, description="Validation error")
+     *     @OA\Response(response=200, description="Profile completed")
      * )
      */
     public function complete(
@@ -101,71 +107,116 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/v1/profile",
+     *     path="/api/v1/users/profile/update",
      *     tags={"Users"},
-     *     summary="Update user profile",
+     *     summary="Update user profile (buyer side)",
+     *     description="Accepts multipart/form-data for avatar upload",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="display_name", type="string"),
-     *             @OA\Property(property="photo_url", type="string")
+     *         required=false,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="display_name", type="string"),
+     *                 @OA\Property(property="photo", type="string", format="binary"),
+     *                 @OA\Property(property="phone_number", type="string"),
+     *                 @OA\Property(property="birth_date", type="string", format="date"),
+     *                 @OA\Property(property="gender", type="string"),
+     *                 @OA\Property(property="country_code", type="string"),
+     *                 @OA\Property(property="locale", type="string"),
+     *                 @OA\Property(property="buyer_categories", type="array", @OA\Items(type="string")),
+     *                 @OA\Property(property="buyer_interests", type="array", @OA\Items(type="string")),
+     *                 @OA\Property(property="payment_methods", type="array", @OA\Items(type="string"))
+     *             )
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Profile updated successfully"),
-     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=200, description="User profile updated successfully"),
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function update(
-        UpdateProfileRequest $request,
-        UpdateProfileUseCase $useCase
+    public function updateUserProfile(
+        UpdateUserProfileRequest $request,
+        UpdateUserProfileUseCase $useCase
     ): JsonResponse {
-        $dto = new UpdateProfileDTO(
+        $dto = new UpdateUserProfileDTO(
             displayName: $request->display_name,
-            photoUrl: $request->photo_url
+            photo: $request->file('photo'),
+            phoneNumber: $request->phone_number,
+            birthDate: $request->birth_date,
+            gender: $request->gender,
+            countryCode: $request->country_code,
+            locale: $request->locale,
+            buyerCategories: $request->buyer_categories,
+            buyerInterests: $request->buyer_interests,
+            paymentMethods: $request->payment_methods,
         );
 
         $useCase->execute($this->user(), $dto);
 
-        return response()->json(['message' => 'Profile updated successfully']);
+        return response()->json(['message' => 'User profile updated successfully']);
     }
 
     /**
-     * @OA\Post(
-     *     path="/api/v1/profile/skip",
+     * @OA\Put(
+     *     path="/api/v1/users/seller-profile/update",
      *     tags={"Users"},
-     *     summary="Skip profile completion",
+     *     summary="Update seller profile",
+     *     description="Accepts multipart/form-data for store banner upload",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Profile skipped successfully"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\RequestBody(
+     *         required=false,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="store_name", type="string"),
+     *                 @OA\Property(property="company_name", type="string"),
+     *                 @OA\Property(property="vat_number", type="string"),
+     *                 @OA\Property(property="support_email", type="string"),
+     *                 @OA\Property(property="support_phone", type="string"),
+     *                 @OA\Property(property="category_tags", type="array", @OA\Items(type="string")),
+     *                 @OA\Property(property="store_description", type="string"),
+     *                 @OA\Property(property="store_banner", type="string", format="binary")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Seller profile updated successfully")
      * )
      */
-    public function skip(
-        SkipProfileUseCase $useCase
+    public function updateSellerProfile(
+        UpdateSellerProfileRequest $request,
+        UpdateSellerProfileUseCase $useCase
     ): JsonResponse {
-        $useCase->execute($this->user());
+        $dto = new UpdateSellerProfileDTO(
+            storeName: $request->store_name,
+            companyName: $request->company_name,
+            vatNumber: $request->vat_number,
+            supportEmail: $request->support_email,
+            supportPhone: $request->support_phone,
+            categoryTags: $request->category_tags,
+            storeDescription: $request->store_description,
+            storeBanner: $request->file('store_banner'),
+        );
 
-        return response()->json(['message' => 'Profile skipped successfully']);
+        $useCase->execute($this->user(), $dto);
+
+        return response()->json(['message' => 'Seller profile updated successfully']);
     }
 
     /**
      * @OA\Post(
-     *     path="/api/v1/become-seller",
+     *     path="/api/v1/users/become-seller",
      *     tags={"Users"},
-     *     summary="Become a seller",
+     *     summary="Convert user to seller",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"store_name", "country_code"},
+     *             required={"store_name","country_code"},
      *             @OA\Property(property="store_name", type="string"),
      *             @OA\Property(property="country_code", type="string")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Seller account activated"),
-     *     @OA\Response(response=400, description="Invalid role transition"),
-     *     @OA\Response(response=401, description="Unauthorized")
+     *     @OA\Response(response=200, description="Seller activated")
      * )
      */
     public function becomeSeller(

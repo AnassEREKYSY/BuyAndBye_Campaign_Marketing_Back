@@ -7,7 +7,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
-class UpdateProfileRequest extends FormRequest
+class UpdateSellerProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -17,16 +17,6 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'display_name' => ['sometimes', 'string', 'max:255'],
-            'phone_number' => ['sometimes', 'nullable', 'string', 'max:50'],
-            'birth_date' => ['sometimes', 'nullable', 'date'],
-            'gender' => ['sometimes', 'nullable', 'string', 'max:50'],
-            'country_code' => ['sometimes', 'nullable', 'string', 'max:10'],
-            'locale' => ['sometimes', 'nullable', 'string', 'max:10'],
-            'photo' => ['sometimes', 'nullable', 'image', 'max:5120'],
-            'buyer_categories' => ['sometimes', 'nullable', 'array'],
-            'buyer_interests' => ['sometimes', 'nullable', 'array'],
-            'payment_methods' => ['sometimes', 'nullable', 'array'],
             'store_name' => ['sometimes', 'nullable', 'string', 'max:255'],
             'company_name' => ['sometimes', 'nullable', 'string', 'max:255'],
             'vat_number' => ['sometimes', 'nullable', 'string', 'max:100'],
@@ -41,7 +31,18 @@ class UpdateProfileRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
-            if (count($this->all()) === 0) {
+            $hasAnyField =
+                $this->hasAny([
+                    'store_name',
+                    'company_name',
+                    'vat_number',
+                    'support_email',
+                    'support_phone',
+                    'category_tags',
+                    'store_description',
+                ]) || $this->hasFile('store_banner');
+
+            if (! $hasAnyField) {
                 $validator->errors()->add('fields', 'At least one field must be provided.');
             }
         });

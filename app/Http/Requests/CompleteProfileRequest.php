@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
-use App\Services\Base64ImageConverter;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CompleteProfileRequest extends FormRequest
@@ -38,23 +37,4 @@ class CompleteProfileRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation(): void
-    {
-        $converter = app(Base64ImageConverter::class);
-        $photoUrl = null;
-        $bannerUrl = null;
-
-        if ($this->file('photo')) {
-            $photoUrl = $converter->toDataUri($this->file('photo'));
-        }
-
-        if ($this->file('store_banner')) {
-            $bannerUrl = $converter->toDataUri($this->file('store_banner'));
-        }
-
-        $this->merge([
-            'photo_url' => $photoUrl,
-            'store_banner_url' => $bannerUrl,
-        ]);
-    }
 }
