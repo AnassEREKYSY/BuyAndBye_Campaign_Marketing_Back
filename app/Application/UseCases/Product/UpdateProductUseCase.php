@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App\Application\UseCases\Product;
 
 use App\Application\Dtos\Product\UpdateProductDTO;
+use App\Domain\Contracts\FileStorageInterface;
 use App\Domain\Contracts\ProductRepositoryInterface;
 use App\Models\Product;
 
 class UpdateProductUseCase
 {
     public function __construct(
-        private readonly ProductRepositoryInterface $repository
+        private readonly ProductRepositoryInterface $repository,
+        private readonly FileStorageInterface $fileStorage,
     ) {}
 
     public function execute(Product $product, UpdateProductDTO $dto): void
@@ -23,7 +25,6 @@ class UpdateProductUseCase
             'condition' => $dto->condition,
             'price' => $dto->price,
             'stock_quantity' => $dto->stockQuantity,
-            'images' => $dto->images,
             'tags' => $dto->tags,
             'weight_kg' => $dto->weightKg,
             'sku' => $dto->sku,
@@ -32,8 +33,27 @@ class UpdateProductUseCase
             'return_days' => $dto->returnDays,
         ], fn ($value) => $value !== null);
 
-        if (! empty($updateData)) {
+        if (!empty($updateData)) {
             $this->repository->update($product, $updateData);
+        }
+        if ($dto->images) {
+            if ($product->images) {
+                foreach ($product->images as $oldImage) {
+                    $this->fileStorage->deleteByUrl($oldImage);
+                }
+            }
+            $imageUrls = [];
+
+            foreach ($dto->images as $image) {
+                $imageUrls[] = $this->fileStorage->storeProductImage(
+                    $product->seller_id,
+                    $product->id,
+                    $image
+                );
+            }
+            $this->repository->update($product, [
+                'images' => $imageUrls
+            ]);
         }
     }
 }
