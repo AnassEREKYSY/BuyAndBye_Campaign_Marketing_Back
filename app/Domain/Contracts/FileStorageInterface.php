@@ -10,5 +10,7 @@ interface FileStorageInterface
 
     public function storeStoreBanner(string $userId, UploadedFile $file): string;
 
+    public function storeProductImage(string $userId, string $productId, UploadedFile $file): string;
+
     public function deleteByUrl(string $publicUrl): void;
 }

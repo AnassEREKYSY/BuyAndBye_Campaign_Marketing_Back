@@ -38,4 +38,10 @@ class LocalFileStorage implements FileStorageInterface
             Storage::disk('public')->delete($path);
         }
     }
+
+    public function storeProductImage(string $userId, string $productId, UploadedFile $file): string
+{
+    $path = $file->store("users/{$userId}/products/{$productId}", 'public');
+    return Storage::url($path);
+}
 }
