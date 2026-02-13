@@ -4,24 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Application\Dtos\Profile\BecomeSellerDTO;
-use App\Application\Dtos\Profile\CompleteProfileDTO;
-use App\Application\Dtos\Profile\UpdateUserProfileDTO;
-use App\Application\Dtos\Profile\UpdateSellerProfileDTO;
 use App\Application\UseCases\Profile\BecomeSellerUseCase;
 use App\Application\UseCases\Profile\CompleteProfileUseCase;
-use App\Application\UseCases\Profile\UpdateUserProfileUseCase;
+use App\Application\UseCases\Profile\SkipProfileUseCase;
 use App\Application\UseCases\Profile\UpdateSellerProfileUseCase;
-use App\Enums\AccountStatus;
+use App\Application\UseCases\Profile\UpdateUserProfileUseCase;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BecomeSellerRequest;
 use App\Http\Requests\CompleteProfileRequest;
-use App\Http\Requests\UpdateUserProfileRequest;
 use App\Http\Requests\UpdateSellerProfileRequest;
+use App\Http\Requests\UpdateUserProfileRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use OpenApi\Annotations as OA;
 
 /**
@@ -34,12 +30,13 @@ class UserController extends Controller
 {
     private function user(): User
     {
+        /** @var User */
         return Auth::user();
     }
 
     /**
      * @OA\Get(
-     *     path="/api/v1/users/profile/get",
+     *     path="/api/v1/users/profile",
      *     tags={"Users"},
      *     summary="Get current authenticated user profile",
      *     security={{"bearerAuth":{}}},
@@ -56,7 +53,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/users/profile/status/get",
+     *     path="/api/v1/users/profile/status",
      *     tags={"Users"},
      *     summary="Get profile completion status",
      *     security={{"bearerAuth":{}}},
@@ -64,14 +61,11 @@ class UserController extends Controller
      *     @OA\Response(response=401, description="Unauthorized")
      * )
      */
-    public function status(): JsonResponse
+    public function status(): UserResource
     {
-        $user = $this->user();
-
-        return response()->json([
-            'status' => $user->status->value,
-            'is_profile_complete' => $user->status === AccountStatus::Active,
-        ]);
+        return new UserResource(
+            $this->user()->load(['profile', 'sellerProfile'])
+        );
     }
 
     /**
@@ -94,20 +88,17 @@ class UserController extends Controller
     public function complete(
         CompleteProfileRequest $request,
         CompleteProfileUseCase $useCase
-    ): JsonResponse {
-        $dto = new CompleteProfileDTO(
-            displayName: $request->display_name,
-            photoUrl: $request->photo_url
-        );
+    ): UserResource {
+        $user = $this->user();
 
-        $useCase->execute($this->user(), $dto);
+        $useCase->execute($user, $request->toDto());
 
-        return response()->json(['message' => 'Profile completed successfully']);
+        return new UserResource($user->fresh(['profile', 'sellerProfile']));
     }
 
     /**
      * @OA\Put(
-     *     path="/api/v1/users/profile/update",
+     *     path="/api/v1/users/profile",
      *     tags={"Users"},
      *     summary="Update user profile (buyer side)",
      *     description="Accepts multipart/form-data for avatar upload",
@@ -137,28 +128,17 @@ class UserController extends Controller
     public function updateUserProfile(
         UpdateUserProfileRequest $request,
         UpdateUserProfileUseCase $useCase
-    ): JsonResponse {
-        $dto = new UpdateUserProfileDTO(
-            displayName: $request->display_name,
-            photo: $request->file('photo'),
-            phoneNumber: $request->phone_number,
-            birthDate: $request->birth_date,
-            gender: $request->gender,
-            countryCode: $request->country_code,
-            locale: $request->locale,
-            buyerCategories: $request->buyer_categories,
-            buyerInterests: $request->buyer_interests,
-            paymentMethods: $request->payment_methods,
-        );
+    ): UserResource {
+        $user = $this->user();
 
-        $useCase->execute($this->user(), $dto);
+        $useCase->execute($user, $request->toDto());
 
-        return response()->json(['message' => 'User profile updated successfully']);
+        return new UserResource($user->fresh(['profile', 'sellerProfile']));
     }
 
     /**
      * @OA\Put(
-     *     path="/api/v1/users/seller-profile/update",
+     *     path="/api/v1/users/seller-profile",
      *     tags={"Users"},
      *     summary="Update seller profile",
      *     description="Accepts multipart/form-data for store banner upload",
@@ -185,21 +165,14 @@ class UserController extends Controller
     public function updateSellerProfile(
         UpdateSellerProfileRequest $request,
         UpdateSellerProfileUseCase $useCase
-    ): JsonResponse {
-        $dto = new UpdateSellerProfileDTO(
-            storeName: $request->store_name,
-            companyName: $request->company_name,
-            vatNumber: $request->vat_number,
-            supportEmail: $request->support_email,
-            supportPhone: $request->support_phone,
-            categoryTags: $request->category_tags,
-            storeDescription: $request->store_description,
-            storeBanner: $request->file('store_banner'),
-        );
+    ): UserResource {
+        Gate::authorize('seller-or-admin');
 
-        $useCase->execute($this->user(), $dto);
+        $user = $this->user();
 
-        return response()->json(['message' => 'Seller profile updated successfully']);
+        $useCase->execute($user, $request->toDto());
+
+        return new UserResource($user->fresh(['profile', 'sellerProfile']));
     }
 
     /**
@@ -222,17 +195,29 @@ class UserController extends Controller
     public function becomeSeller(
         BecomeSellerRequest $request,
         BecomeSellerUseCase $useCase
-    ): JsonResponse {
-        $dto = new BecomeSellerDTO(
-            storeName: $request->store_name,
-            countryCode: $request->country_code
-        );
+    ): UserResource {
+        $user = $this->user();
 
-        $useCase->execute($this->user(), $dto);
+        $useCase->execute($user, $request->toDto());
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Seller account activated',
-        ]);
+        return new UserResource($user->fresh(['profile', 'sellerProfile']));
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/users/profile/skip",
+     *     tags={"Users"},
+     *     summary="Skip profile completion",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Profile skipped")
+     * )
+     */
+    public function skipProfile(SkipProfileUseCase $useCase): UserResource
+    {
+        $user = $this->user();
+
+        $useCase->execute($user);
+
+        return new UserResource($user->fresh(['profile', 'sellerProfile']));
     }
 }

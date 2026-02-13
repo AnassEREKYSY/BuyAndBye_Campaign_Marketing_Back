@@ -10,6 +10,7 @@ use App\Domain\Contracts\SellerProfileRepositoryInterface;
 use App\Domain\Contracts\UserRepositoryInterface;
 use App\Enums\AccountStatus;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class UpdateSellerProfileUseCase
 {
@@ -21,26 +22,32 @@ class UpdateSellerProfileUseCase
 
     public function execute(User $user, UpdateSellerProfileDTO $dto): void
     {
-        $update = array_filter([
-            'store_name' => $dto->storeName,
-            'company_name' => $dto->companyName,
-            'vat_number' => $dto->vatNumber,
-            'support_email' => $dto->supportEmail,
-            'support_phone' => $dto->supportPhone,
-            'category_tags' => $dto->categoryTags,
-            'store_description' => $dto->storeDescription,
-        ], fn ($v) => $v !== null);
+        DB::transaction(function () use ($user, $dto): void {
+            $update = array_filter([
+                'store_name' => $dto->storeName,
+                'company_name' => $dto->companyName,
+                'vat_number' => $dto->vatNumber,
+                'support_email' => $dto->supportEmail,
+                'support_phone' => $dto->supportPhone,
+                'category_tags' => $dto->categoryTags,
+                'store_description' => $dto->storeDescription,
+            ], fn ($v) => $v !== null);
 
-        if ($dto->storeBanner) {
-            $update['store_banner_url'] =
-                $this->fileStorage->storeStoreBanner((string) $user->id, $dto->storeBanner);
-        }
+            if ($dto->storeBanner) {
+                if ($user->sellerProfile?->store_banner_url) {
+                    $this->fileStorage->deleteByUrl($user->sellerProfile->store_banner_url);
+                }
 
-        if (!empty($update)) {
-            $this->sellerProfileRepository->upsertForUser($user, $update);
-        }
+                $update['store_banner_url'] =
+                    $this->fileStorage->storeStoreBanner((string) $user->id, $dto->storeBanner);
+            }
 
-        $this->updateAccountStatus($user);
+            if (!empty($update)) {
+                $this->sellerProfileRepository->upsertForUser($user, $update);
+            }
+
+            $this->updateAccountStatus($user);
+        });
     }
 
     private function updateAccountStatus(User $user): void

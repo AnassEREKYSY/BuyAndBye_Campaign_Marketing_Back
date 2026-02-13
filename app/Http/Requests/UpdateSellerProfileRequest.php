@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Application\Dtos\Profile\UpdateSellerProfileDTO;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -46,5 +47,19 @@ class UpdateSellerProfileRequest extends FormRequest
                 $validator->errors()->add('fields', 'At least one field must be provided.');
             }
         });
+    }
+
+    public function toDto(): UpdateSellerProfileDTO
+    {
+        return new UpdateSellerProfileDTO(
+            storeName: $this->store_name,
+            companyName: $this->company_name,
+            vatNumber: $this->vat_number,
+            supportEmail: $this->support_email,
+            supportPhone: $this->support_phone,
+            categoryTags: $this->category_tags,
+            storeDescription: $this->store_description,
+            storeBanner: $this->file('store_banner'),
+        );
     }
 }

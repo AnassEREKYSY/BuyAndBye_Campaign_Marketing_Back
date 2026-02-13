@@ -37,8 +37,8 @@ class RegisterUserUseCase
             $user->email = $dto->email;
             $user->password = Hash::make($dto->password);
             $user->display_name = $dto->displayName;
-            $user->role = UserRole::Buyer->value;
-            $user->status = AccountStatus::Incomplete->value;
+            $user->role = UserRole::Buyer;
+            $user->status = AccountStatus::Incomplete;
 
             $this->userRepository->save($user);
 

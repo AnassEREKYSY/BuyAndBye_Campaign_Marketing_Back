@@ -1,19 +1,52 @@
 services:
-  app:
-    image: composer:2
-    container_name: buyandbye_app
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: buyandbye_api
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: BuyAndBye
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:-}
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-buyandbye}
+      DB_USERNAME: ${DB_USERNAME:-app}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      CACHE_DRIVER: file
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: file
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - buyandbye_network
 
-  php:
-    image: php:8.2-cli
-    container_name: buyandbye_php
-    working_dir: /var/www/html
+  web:
+    build:
+      context: ../BuyAndByeWeb
+      dockerfile: ../BuyAndByeApi/docker/web/Dockerfile
+    container_name: buyandbye_web
+    working_dir: /app
     volumes:
-      - .:/var/www/html
+      - ../BuyAndByeWeb:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000/api
+      VITE_APP_NAME: "Buy & Bye"
+      VITE_APP_ENV: development
+    depends_on:
+      - api
     networks:
       - buyandbye_network
 

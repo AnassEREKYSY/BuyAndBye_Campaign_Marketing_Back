@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Dtos\Product;
 
-class CreateProductDTO
+final class CreateProductDTO
 {
     public function __construct(
         public readonly string $sellerId,

@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 namespace App\Application\Dtos\Profile;
+
 use Illuminate\Http\UploadedFile;
 
-class UpdateSellerProfileDTO
+final class UpdateSellerProfileDTO
 {
     public function __construct(
         public readonly ?string $storeName,

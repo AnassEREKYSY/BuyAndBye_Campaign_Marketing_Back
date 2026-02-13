@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Dtos\Product;
 
-class UpdateProductDTO
+final class UpdateProductDTO
 {
     public function __construct(
         public readonly ?string $title,

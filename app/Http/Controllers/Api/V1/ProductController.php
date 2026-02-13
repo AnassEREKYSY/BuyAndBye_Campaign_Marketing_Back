@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Application\Dtos\Product\CreateProductDTO;
-use App\Application\Dtos\Product\UpdateProductDTO;
 use App\Application\UseCases\Product\CreateProductUseCase;
 use App\Application\UseCases\Product\DeleteProductUseCase;
 use App\Application\UseCases\Product\GetSellerProductsUseCase;
@@ -16,6 +14,8 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 use OpenApi\Annotations as OA;
 
@@ -37,21 +37,16 @@ class ProductController extends Controller
      *     @OA\Response(response=403, description="Forbidden")
      * )
      */
-    public function index(GetSellerProductsUseCase $useCase): JsonResponse
+    public function index(Request $request, GetSellerProductsUseCase $useCase): AnonymousResourceCollection
     {
         Gate::authorize('seller-or-admin');
 
-        $page = (int) request()->query('page', 1);
-        $pageSize = (int) request()->query('pageSize', 20);
+        $page = (int) $request->query('page', 1);
+        $pageSize = min((int) $request->query('pageSize', 20), 100);
 
         $products = $useCase->execute(auth()->id(), $page, $pageSize);
 
-        return response()->json([
-            'items' => ProductResource::collection($products->items()),
-            'page' => $products->currentPage(),
-            'pageSize' => $products->perPage(),
-            'total' => $products->total(),
-        ]);
+        return ProductResource::collection($products);
     }
 
     /**
@@ -69,26 +64,7 @@ class ProductController extends Controller
     ): JsonResponse {
         Gate::authorize('seller-or-admin');
 
-        $validated = $request->validated();
-
-        $dto = new CreateProductDTO(
-            sellerId: auth()->id(),
-            title: $validated['title'],
-            description: $validated['description'] ?? null,
-            categoryId: $validated['category_id'] ?? null,
-            condition: $validated['condition'],
-            price: (float) $validated['price'],
-            stockQuantity: (int) $validated['stock_quantity'],
-            images: $validated['images_data'] ?? null,
-            tags: $validated['tags'] ?? null,
-            weightKg: $validated['weight_kg'] ?? null,
-            sku: $validated['sku'] ?? null,
-            isDigital: $validated['is_digital'],
-            allowReturns: $validated['allow_returns'],
-            returnDays: (int) $validated['return_days'],
-        );
-
-        $product = $useCase->execute($dto);
+        $product = $useCase->execute($request->toDto());
 
         return (new ProductResource($product))
             ->response()
@@ -127,25 +103,7 @@ class ProductController extends Controller
     ): ProductResource {
         $this->authorize('update', $product);
 
-        $validated = $request->validated();
-
-        $dto = new UpdateProductDTO(
-            title: $validated['title'] ?? null,
-            description: $validated['description'] ?? null,
-            categoryId: $validated['category_id'] ?? null,
-            condition: $validated['condition'] ?? null,
-            price: $validated['price'] ?? null,
-            stockQuantity: $validated['stock_quantity'] ?? null,
-            images: $validated['images_data'] ?? null,
-            tags: $validated['tags'] ?? null,
-            weightKg: $validated['weight_kg'] ?? null,
-            sku: $validated['sku'] ?? null,
-            isDigital: $validated['is_digital'] ?? null,
-            allowReturns: $validated['allow_returns'] ?? null,
-            returnDays: $validated['return_days'] ?? null,
-        );
-
-        $useCase->execute($product, $dto);
+        $useCase->execute($product, $request->toDto());
 
         return new ProductResource($product->fresh());
     }
@@ -156,7 +114,7 @@ class ProductController extends Controller
      *     tags={"Products"},
      *     summary="Delete a product",
      *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Product deleted")
+     *     @OA\Response(response=204, description="Product deleted")
      * )
      */
     public function destroy(
@@ -167,9 +125,6 @@ class ProductController extends Controller
 
         $useCase->execute($product);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Product deleted'
-        ]);
+        return response()->json(null, 204);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Application\Dtos\Profile\CompleteProfileDTO;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CompleteProfileRequest extends FormRequest
@@ -37,4 +38,11 @@ class CompleteProfileRequest extends FormRequest
         ];
     }
 
+    public function toDto(): CompleteProfileDTO
+    {
+        return new CompleteProfileDTO(
+            displayName: $this->display_name,
+            photoUrl: $this->photo_url,
+        );
+    }
 }

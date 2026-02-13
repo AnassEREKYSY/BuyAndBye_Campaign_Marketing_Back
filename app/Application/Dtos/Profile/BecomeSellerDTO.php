@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Dtos\Profile;
 
-class BecomeSellerDTO
+final class BecomeSellerDTO
 {
     public function __construct(
         public readonly string $storeName,

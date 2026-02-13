@@ -10,6 +10,7 @@ use App\Domain\Contracts\UserProfileRepositoryInterface;
 use App\Domain\Contracts\UserRepositoryInterface;
 use App\Enums\AccountStatus;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class UpdateUserProfileUseCase
 {
@@ -21,39 +22,41 @@ class UpdateUserProfileUseCase
 
     public function execute(User $user, UpdateUserProfileDTO $dto): void
     {
-        $userUpdate = array_filter([
-            'display_name' => $dto->displayName,
-        ], fn ($v) => $v !== null);
+        DB::transaction(function () use ($user, $dto): void {
+            $userUpdate = array_filter([
+                'display_name' => $dto->displayName,
+            ], fn ($v) => $v !== null);
 
-        if ($dto->photo) {
-            if ($user->photo_url) {
-                $this->fileStorage->deleteByUrl($user->photo_url);
+            if ($dto->photo) {
+                if ($user->photo_url) {
+                    $this->fileStorage->deleteByUrl($user->photo_url);
+                }
+
+                $userUpdate['photo_url'] = $this->fileStorage
+                    ->storeUserAvatar((string) $user->id, $dto->photo);
             }
 
-            $userUpdate['photo_url'] = $this->fileStorage
-                ->storeUserAvatar((string) $user->id, $dto->photo);
-        }
+            if (!empty($userUpdate)) {
+                $this->userRepository->update($user, $userUpdate);
+            }
 
-        if (!empty($userUpdate)) {
-            $this->userRepository->update($user, $userUpdate);
-        }
+            $profileUpdate = array_filter([
+                'phone_number' => $dto->phoneNumber,
+                'birth_date' => $dto->birthDate,
+                'gender' => $dto->gender,
+                'country_code' => $dto->countryCode,
+                'locale' => $dto->locale,
+                'buyer_categories' => $dto->buyerCategories,
+                'buyer_interests' => $dto->buyerInterests,
+                'payment_methods' => $dto->paymentMethods,
+            ], fn ($v) => $v !== null);
 
-        $profileUpdate = array_filter([
-            'phone_number' => $dto->phoneNumber,
-            'birth_date' => $dto->birthDate,
-            'gender' => $dto->gender,
-            'country_code' => $dto->countryCode,
-            'locale' => $dto->locale,
-            'buyer_categories' => $dto->buyerCategories,
-            'buyer_interests' => $dto->buyerInterests,
-            'payment_methods' => $dto->paymentMethods,
-        ], fn ($v) => $v !== null);
+            if (!empty($profileUpdate)) {
+                $this->profileRepository->upsertForUser($user, $profileUpdate);
+            }
 
-        if (!empty($profileUpdate)) {
-            $this->profileRepository->upsertForUser($user, $profileUpdate);
-        }
-
-        $this->updateAccountStatus($user);
+            $this->updateAccountStatus($user);
+        });
     }
 
     private function updateAccountStatus(User $user): void

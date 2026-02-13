@@ -1,3 +1,4 @@
+-- Create the app user if it doesn't exist
 DO
 $$
 BEGIN
@@ -14,13 +15,19 @@ BEGIN
 END
 $$;
 
-ALTER DATABASE buyandbye_db OWNER TO buyandbye_user;
-
-GRANT ALL PRIVILEGES ON DATABASE buyandbye_db TO buyandbye_user;
-GRANT USAGE, CREATE ON SCHEMA public TO buyandbye_user;
-
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-GRANT ALL ON TABLES TO buyandbye_user;
-
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-GRANT ALL ON SEQUENCES TO buyandbye_user;
+-- Grant full access to the app user
+DO
+$$
+BEGIN
+   EXECUTE format(
+      'GRANT ALL PRIVILEGES ON DATABASE %I TO %I',
+      current_database(),
+      current_setting('app.db_user')
+   );
+   EXECUTE format(
+      'ALTER DATABASE %I OWNER TO %I',
+      current_database(),
+      current_setting('app.db_user')
+   );
+END
+$$;

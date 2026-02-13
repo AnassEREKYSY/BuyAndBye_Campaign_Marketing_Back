@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Application\Dtos\Profile\UpdateUserProfileDTO;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -50,5 +51,21 @@ class UpdateUserProfileRequest extends FormRequest
                 $validator->errors()->add('fields', 'At least one field must be provided.');
             }
         });
+    }
+
+    public function toDto(): UpdateUserProfileDTO
+    {
+        return new UpdateUserProfileDTO(
+            displayName: $this->display_name,
+            photo: $this->file('photo'),
+            phoneNumber: $this->phone_number,
+            birthDate: $this->birth_date,
+            gender: $this->gender,
+            countryCode: $this->country_code,
+            locale: $this->locale,
+            buyerCategories: $this->buyer_categories,
+            buyerInterests: $this->buyer_interests,
+            paymentMethods: $this->payment_methods,
+        );
     }
 }

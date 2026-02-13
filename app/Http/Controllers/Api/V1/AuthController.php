@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Application\Dtos\Auth\LoginUserDTO;
-use App\Application\Dtos\Auth\RegisterUserDTO;
 use App\Application\UseCases\Auth\LoginUserUseCase;
 use App\Application\UseCases\Auth\RegisterUserUseCase;
 use App\Http\Controllers\Controller;
@@ -13,6 +11,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\UserResource;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use OpenApi\Annotations as OA;
@@ -49,14 +48,7 @@ class AuthController extends Controller
         RegisterRequest $request,
         RegisterUserUseCase $useCase
     ): JsonResponse {
-        $dto = new RegisterUserDTO(
-            email: $request->email,
-            password: $request->password,
-            displayName: $request->display_name,
-            photo: $request->file('photo')
-        );
-
-        [$user, $token] = $useCase->execute($dto);
+        [$user, $token] = $useCase->execute($request->toDto());
 
         return AuthResource::fromUser($user, $token)
             ->response()
@@ -85,12 +77,7 @@ class AuthController extends Controller
         LoginRequest $request,
         LoginUserUseCase $useCase
     ): AuthResource {
-        $dto = new LoginUserDTO(
-            email: $request->email,
-            password: $request->password
-        );
-
-        [$user, $token] = $useCase->execute($dto);
+        [$user, $token] = $useCase->execute($request->toDto());
 
         return AuthResource::fromUser($user, $token);
     }
@@ -107,11 +94,11 @@ class AuthController extends Controller
      */
     public function me(): UserResource
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
-    
+
         $user->load(['profile', 'sellerProfile']);
-    
+
         return new UserResource($user);
     }
 }

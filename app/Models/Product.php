@@ -47,7 +47,6 @@ class Product extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'id',
         'seller_id',
         'title',
         'description',

@@ -24,10 +24,6 @@ class LoginUserUseCase
             throw InvalidCredentialsException::create();
         }
 
-        $this->userRepository->update($user, [
-            'last_login_at' => now()
-        ]);
-
         $token = $user->createToken('api-token')->plainTextToken;
 
         return [$user, $token];

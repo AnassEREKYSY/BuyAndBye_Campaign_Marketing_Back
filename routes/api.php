@@ -12,7 +12,7 @@ Route::get('/health', fn () => response()->json([
 
 Route::prefix('v1')->group(function () {
 
-    Route::prefix('auth')->group(function () {
+    Route::prefix('auth')->middleware('throttle:5,1')->group(function () {
         Route::post('register', [AuthController::class, 'register']);
         Route::post('login', [AuthController::class, 'login']);
     });
@@ -26,6 +26,7 @@ Route::prefix('v1')->group(function () {
             Route::get('profile', [UserController::class, 'show']);
             Route::get('profile/status', [UserController::class, 'status']);
             Route::post('profile/complete', [UserController::class, 'complete']);
+            Route::post('profile/skip', [UserController::class, 'skipProfile']);
             Route::put('profile', [UserController::class, 'updateUserProfile']);
             Route::put('seller-profile', [UserController::class, 'updateSellerProfile']);
             Route::post('become-seller', [UserController::class, 'becomeSeller']);

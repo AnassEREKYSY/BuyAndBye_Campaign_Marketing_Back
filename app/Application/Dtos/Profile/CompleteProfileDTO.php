@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Dtos\Profile;
 
-class CompleteProfileDTO
+final class CompleteProfileDTO
 {
     public function __construct(
         public readonly string $displayName,

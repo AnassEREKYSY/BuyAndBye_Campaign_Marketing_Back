@@ -18,7 +18,7 @@ class SkipProfileUseCase
     {
         $this->userRepository->update($user, [
             'profile_skipped' => true,
-            'status' => AccountStatus::Skipped->value,
+            'status' => AccountStatus::Skipped,
         ]);
     }
 }
