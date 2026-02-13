@@ -18,7 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 use OpenApi\Annotations as OA;
-
+use App\Application\UseCases\Product\UpdateProductStatusUseCase;
+use App\Http\Requests\UpdateProductStatusRequest; 
 /**
  * @OA\Tag(name="Products", description="Product management endpoints")
  */
@@ -126,5 +127,28 @@ class ProductController extends Controller
         $useCase->execute($product);
 
         return response()->json(null, 204);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/v1/products/{product}/status",
+     *     tags={"Products"},
+     *     summary="Update product status",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Product status updated")
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden")
+     * )
+     */
+    public function updateStatus(
+        UpdateProductStatusRequest $request,
+        Product $product,
+        UpdateProductStatusUseCase $useCase
+    ): ProductResource {
+        $this->authorize('update', $product);
+    
+        $useCase->execute($product, $request->toDto());
+    
+        return new ProductResource($product->fresh());
     }
 }

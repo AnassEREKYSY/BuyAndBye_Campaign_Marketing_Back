@@ -68,4 +68,31 @@ class UpdateProductRequest extends FormRequest
             }
         });
     }
+
+    public function toDto(): UpdateProductDTO
+    {
+        $validated = $this->validated();
+
+        return new UpdateProductDTO(
+            title: $validated['title'] ?? null,
+            description: $validated['description'] ?? null,
+            categoryId: $validated['category_id'] ?? null,
+            condition: $validated['condition'] ?? null,
+            price: isset($validated['price']) ? (float) $validated['price'] : null,
+            stockQuantity: isset($validated['stock_quantity']) ? (int) $validated['stock_quantity'] : null,
+            images: $this->file('images'),
+            tags: $validated['tags'] ?? null,
+            weightKg: isset($validated['weight_kg']) ? (float) $validated['weight_kg'] : null,
+            sku: $validated['sku'] ?? null,
+            isDigital: array_key_exists('is_digital', $validated)
+                ? (bool) $validated['is_digital']
+                : null,
+            allowReturns: array_key_exists('allow_returns', $validated)
+                ? (bool) $validated['allow_returns']
+                : null,
+            returnDays: isset($validated['return_days'])
+                ? (int) $validated['return_days']
+                : null,
+        );
+    }
 }
