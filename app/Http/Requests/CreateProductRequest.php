@@ -57,7 +57,7 @@ class CreateProductRequest extends FormRequest
             condition: $validated['condition'],
             price: (float) $validated['price'],
             stockQuantity: (int) $validated['stock_quantity'],
-            images: $validated['images_data'] ?? null,
+            images: $this->file('images'), 
             tags: $validated['tags'] ?? null,
             weightKg: isset($validated['weight_kg']) ? (float) $validated['weight_kg'] : null,
             sku: $validated['sku'] ?? null,
