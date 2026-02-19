@@ -13,7 +13,7 @@ class AuthResource extends JsonResource
         public string $token,
         public ?int $expiresIn,
         public string $userId,
-        public string $profileStatus,
+        public string $accountStatus,
         public bool $isProfileComplete
     ) {
         parent::__construct(null);
@@ -28,7 +28,7 @@ class AuthResource extends JsonResource
                 'token' => $this->token,
                 'expiresIn' => $this->expiresIn,
                 'userId' => $this->userId,
-                'profileStatus' => $this->profileStatus,
+                'accountStatus' => $this->accountStatus,
                 'isProfileComplete' => $this->isProfileComplete,
             ],
         ];
@@ -36,12 +36,14 @@ class AuthResource extends JsonResource
 
     public static function fromUser($user, string $token): self
     {
+        $isComplete = (bool) $user->profile_completed && $user->status === AccountStatus::Active;
+
         return new self(
             token: $token,
             expiresIn: config('sanctum.expiration'),
             userId: $user->id,
-            profileStatus: $user->status->value,
-            isProfileComplete: $user->status === AccountStatus::Active
+            accountStatus: $user->status->value,
+            isProfileComplete: $isComplete
         );
     }
 }

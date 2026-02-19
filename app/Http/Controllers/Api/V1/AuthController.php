@@ -25,16 +25,17 @@ class AuthController extends Controller
      * @OA\Post(
      *     path="/api/v1/auth/register",
      *     tags={"Auth"},
-     *     summary="Register a new user",
+     *     summary="Register a new user (brand or influencer)",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"email","password","display_name"},
-     *                 @OA\Property(property="email", type="string", format="email"),
-     *                 @OA\Property(property="password", type="string"),
-     *                 @OA\Property(property="display_name", type="string"),
+     *                 required={"email","password","display_name","role"},
+     *                 @OA\Property(property="email", type="string", format="email", example="user@mail.com"),
+     *                 @OA\Property(property="password", type="string", format="password", example="StrongP@ssw0rd1"),
+     *                 @OA\Property(property="display_name", type="string", example="Anass"),
+     *                 @OA\Property(property="role", type="string", enum={"brand","influencer"}, example="brand"),
      *                 @OA\Property(property="photo", type="string", format="binary")
      *             )
      *         )
@@ -44,10 +45,8 @@ class AuthController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function register(
-        RegisterRequest $request,
-        RegisterUserUseCase $useCase
-    ): JsonResponse {
+    public function register(RegisterRequest $request, RegisterUserUseCase $useCase): JsonResponse
+    {
         [$user, $token] = $useCase->execute($request->toDto());
 
         return AuthResource::fromUser($user, $token)
@@ -64,19 +63,18 @@ class AuthController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"email","password"},
-     *             @OA\Property(property="email", type="string", format="email"),
-     *             @OA\Property(property="password", type="string", format="password")
+     *             @OA\Property(property="email", type="string", format="email", example="user@mail.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="StrongP@ssw0rd1")
      *         )
      *     ),
      *     @OA\Response(response=200, description="Authenticated successfully"),
      *     @OA\Response(response=401, description="Invalid credentials"),
+     *     @OA\Response(response=403, description="Account is not allowed to login"),
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function login(
-        LoginRequest $request,
-        LoginUserUseCase $useCase
-    ): AuthResource {
+    public function login(LoginRequest $request, LoginUserUseCase $useCase): AuthResource
+    {
         [$user, $token] = $useCase->execute($request->toDto());
 
         return AuthResource::fromUser($user, $token);
@@ -97,7 +95,7 @@ class AuthController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        $user->load(['profile', 'sellerProfile']);
+        $user->load(['brandProfile', 'influencerProfile']);
 
         return new UserResource($user);
     }

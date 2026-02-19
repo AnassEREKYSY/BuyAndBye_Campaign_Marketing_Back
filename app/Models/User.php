@@ -7,19 +7,19 @@ namespace App\Models;
 use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected $table = 'users';
-
     protected $keyType = 'string';
-
     public $incrementing = false;
 
     protected $fillable = [
@@ -30,7 +30,6 @@ class User extends Authenticatable
         'role',
         'status',
         'profile_completed',
-        'profile_skipped',
         'email_verified_at',
     ];
 
@@ -42,8 +41,8 @@ class User extends Authenticatable
         'role' => UserRole::class,
         'status' => AccountStatus::class,
         'profile_completed' => 'boolean',
-        'profile_skipped' => 'boolean',
         'email_verified_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function booted(): void
@@ -55,18 +54,13 @@ class User extends Authenticatable
         });
     }
 
-    public function products()
+    public function brandProfile(): HasOne
     {
-        return $this->hasMany(Product::class, 'seller_id');
+        return $this->hasOne(BrandProfile::class, 'user_id');
     }
 
-    public function profile()
+    public function influencerProfile(): HasOne
     {
-        return $this->hasOne(UserProfile::class);
-    }
-
-    public function sellerProfile()
-    {
-        return $this->hasOne(SellerProfile::class);
+        return $this->hasOne(InfluencerProfile::class, 'user_id');
     }
 }

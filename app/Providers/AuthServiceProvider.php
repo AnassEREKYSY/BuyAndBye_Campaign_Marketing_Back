@@ -4,32 +4,26 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Models\Product;
 use App\Models\User;
-use App\Policies\ProductPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    protected $policies = [
-        Product::class => ProductPolicy::class,
-    ];
+    protected $policies = [];
 
     public function boot(): void
     {
         $this->registerPolicies();
 
-        Gate::define('buyer-only', fn (User $user): bool => $user->role->isBuyer()
-        );
+        Gate::define('admin-only', fn (User $user): bool => $user->role->isAdmin());
 
-        Gate::define('seller-only', fn (User $user): bool => $user->role->isSeller()
-        );
+        Gate::define('brand-only', fn (User $user): bool => $user->role->isBrand());
 
-        Gate::define('admin-only', fn (User $user): bool => $user->role->isAdmin()
-        );
+        Gate::define('influencer-only', fn (User $user): bool => $user->role->isInfluencer());
 
-        Gate::define('seller-or-admin', fn (User $user): bool => $user->role->isSellerOrAdmin()
-        );
+        Gate::define('brand-or-admin', fn (User $user): bool => $user->role->isBrand() || $user->role->isAdmin());
+
+        Gate::define('influencer-or-admin', fn (User $user): bool => $user->role->isInfluencer() || $user->role->isAdmin());
     }
 }

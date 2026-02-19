@@ -11,6 +11,4 @@ enum AccountStatus: string
     case Suspended = 'suspended';
     case Banned = 'banned';
     case Deleted = 'deleted';
-    case Incomplete = 'incomplete';
-    case Skipped = 'skipped';
 }

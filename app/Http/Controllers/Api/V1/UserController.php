@@ -4,27 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Application\UseCases\Profile\BecomeSellerUseCase;
-use App\Application\UseCases\Profile\CompleteProfileUseCase;
-use App\Application\UseCases\Profile\SkipProfileUseCase;
-use App\Application\UseCases\Profile\UpdateSellerProfileUseCase;
-use App\Application\UseCases\Profile\UpdateUserProfileUseCase;
+use App\Application\UseCases\Profile\UpdateBrandProfileUseCase;
+use App\Application\UseCases\Profile\UpdateInfluencerProfileUseCase;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\BecomeSellerRequest;
-use App\Http\Requests\CompleteProfileRequest;
-use App\Http\Requests\UpdateSellerProfileRequest;
-use App\Http\Requests\UpdateUserProfileRequest;
+use App\Http\Requests\UpdateBrandProfileRequest;
+use App\Http\Requests\UpdateInfluencerProfileRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use OpenApi\Annotations as OA;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
- * @OA\Tag(
- *     name="Users",
- *     description="User profile & seller profile management"
- * )
+ * @OA\Tag(name="Users", description="Current user profile management")
  */
 class UserController extends Controller
 {
@@ -47,177 +39,90 @@ class UserController extends Controller
     public function show(): UserResource
     {
         return new UserResource(
-            $this->user()->load(['profile', 'sellerProfile'])
+            $this->user()->load(['brandProfile', 'influencerProfile'])
         );
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/v1/users/profile/status",
-     *     tags={"Users"},
-     *     summary="Get profile completion status",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Profile status retrieved"),
-     *     @OA\Response(response=401, description="Unauthorized")
-     * )
-     */
-    public function status(): UserResource
-    {
-        return new UserResource(
-            $this->user()->load(['profile', 'sellerProfile'])
-        );
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/users/profile/complete",
-     *     tags={"Users"},
-     *     summary="Complete minimal profile information",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"display_name"},
-     *             @OA\Property(property="display_name", type="string"),
-     *             @OA\Property(property="photo_url", type="string", nullable=true)
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Profile completed")
-     * )
-     */
-    public function complete(
-        CompleteProfileRequest $request,
-        CompleteProfileUseCase $useCase
-    ): UserResource {
-        $user = $this->user();
-
-        $useCase->execute($user, $request->toDto());
-
-        return new UserResource($user->fresh(['profile', 'sellerProfile']));
     }
 
     /**
      * @OA\Put(
-     *     path="/api/v1/users/profile",
+     *     path="/api/v1/users/profile/brand",
      *     tags={"Users"},
-     *     summary="Update user profile (buyer side)",
-     *     description="Accepts multipart/form-data for avatar upload",
+     *     summary="Update brand profile",
+     *     description="Only for users with role=brand. Accepts multipart/form-data for logo upload.",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=false,
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 @OA\Property(property="display_name", type="string"),
-     *                 @OA\Property(property="photo", type="string", format="binary"),
-     *                 @OA\Property(property="phone_number", type="string"),
-     *                 @OA\Property(property="birth_date", type="string", format="date"),
-     *                 @OA\Property(property="gender", type="string"),
-     *                 @OA\Property(property="country_code", type="string"),
-     *                 @OA\Property(property="locale", type="string"),
-     *                 @OA\Property(property="buyer_categories", type="array", @OA\Items(type="string")),
-     *                 @OA\Property(property="buyer_interests", type="array", @OA\Items(type="string")),
-     *                 @OA\Property(property="payment_methods", type="array", @OA\Items(type="string"))
+     *                 @OA\Property(property="brand_name", type="string", example="My Brand"),
+     *                 @OA\Property(property="website_url", type="string", format="uri", example="https://brand.com"),
+     *                 @OA\Property(property="industry", type="string", example="Beauty"),
+     *                 @OA\Property(property="contact_email", type="string", format="email", example="contact@brand.com"),
+     *                 @OA\Property(property="contact_phone", type="string", example="+212600000000"),
+     *                 @OA\Property(property="description", type="string", example="We sell amazing products"),
+     *                 @OA\Property(property="logo", type="string", format="binary")
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=200, description="User profile updated successfully"),
+     *     @OA\Response(response=200, description="Brand profile updated"),
+     *     @OA\Response(response=400, description="Wrong role"),
+     *     @OA\Response(response=401, description="Unauthorized"),
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function updateUserProfile(
-        UpdateUserProfileRequest $request,
-        UpdateUserProfileUseCase $useCase
-    ): UserResource {
+    public function updateBrandProfile(UpdateBrandProfileRequest $request, UpdateBrandProfileUseCase $useCase): UserResource
+    {
         $user = $this->user();
+
+        if (! $user->role->isBrand()) {
+            throw new BadRequestHttpException('Only brand users can update brand profile.');
+        }
 
         $useCase->execute($user, $request->toDto());
 
-        return new UserResource($user->fresh(['profile', 'sellerProfile']));
+        return new UserResource($user->fresh(['brandProfile', 'influencerProfile']));
     }
 
     /**
      * @OA\Put(
-     *     path="/api/v1/users/seller-profile",
+     *     path="/api/v1/users/profile/influencer",
      *     tags={"Users"},
-     *     summary="Update seller profile",
-     *     description="Accepts multipart/form-data for store banner upload",
+     *     summary="Update influencer profile",
+     *     description="Only for users with role=influencer.",
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=false,
-     *         @OA\MediaType(
-     *             mediaType="multipart/form-data",
-     *             @OA\Schema(
-     *                 @OA\Property(property="store_name", type="string"),
-     *                 @OA\Property(property="company_name", type="string"),
-     *                 @OA\Property(property="vat_number", type="string"),
-     *                 @OA\Property(property="support_email", type="string"),
-     *                 @OA\Property(property="support_phone", type="string"),
-     *                 @OA\Property(property="category_tags", type="array", @OA\Items(type="string")),
-     *                 @OA\Property(property="store_description", type="string"),
-     *                 @OA\Property(property="store_banner", type="string", format="binary")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="Seller profile updated successfully")
-     * )
-     */
-    public function updateSellerProfile(
-        UpdateSellerProfileRequest $request,
-        UpdateSellerProfileUseCase $useCase
-    ): UserResource {
-        Gate::authorize('seller-or-admin');
-
-        $user = $this->user();
-
-        $useCase->execute($user, $request->toDto());
-
-        return new UserResource($user->fresh(['profile', 'sellerProfile']));
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/users/become-seller",
-     *     tags={"Users"},
-     *     summary="Convert user to seller",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
      *         @OA\JsonContent(
-     *             required={"store_name","country_code"},
-     *             @OA\Property(property="store_name", type="string"),
-     *             @OA\Property(property="country_code", type="string")
+     *             @OA\Property(property="niche", type="string", example="Tech"),
+     *             @OA\Property(property="instagram_url", type="string", format="uri", example="https://instagram.com/username"),
+     *             @OA\Property(property="tiktok_url", type="string", format="uri", example="https://tiktok.com/@username"),
+     *             @OA\Property(property="youtube_url", type="string", format="uri", example="https://youtube.com/@username"),
+     *             @OA\Property(property="followers_instagram", type="integer", example=50000),
+     *             @OA\Property(property="followers_tiktok", type="integer", example=120000),
+     *             @OA\Property(property="followers_youtube", type="integer", example=10000),
+     *             @OA\Property(property="avg_engagement_rate", type="number", format="float", example=4.2),
+     *             @OA\Property(property="country_code", type="string", example="MA"),
+     *             @OA\Property(property="language", type="string", example="fr"),
+     *             @OA\Property(property="media_kit_url", type="string", format="uri", example="https://drive.google.com/...")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Seller activated")
+     *     @OA\Response(response=200, description="Influencer profile updated"),
+     *     @OA\Response(response=400, description="Wrong role"),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function becomeSeller(
-        BecomeSellerRequest $request,
-        BecomeSellerUseCase $useCase
-    ): UserResource {
-        $user = $this->user();
-
-        $useCase->execute($user, $request->toDto());
-
-        return new UserResource($user->fresh(['profile', 'sellerProfile']));
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/users/profile/skip",
-     *     tags={"Users"},
-     *     summary="Skip profile completion",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(response=200, description="Profile skipped")
-     * )
-     */
-    public function skipProfile(SkipProfileUseCase $useCase): UserResource
+    public function updateInfluencerProfile(UpdateInfluencerProfileRequest $request, UpdateInfluencerProfileUseCase $useCase): UserResource
     {
         $user = $this->user();
 
-        $useCase->execute($user);
+        if (! $user->role->isInfluencer()) {
+            throw new BadRequestHttpException('Only influencer users can update influencer profile.');
+        }
 
-        return new UserResource($user->fresh(['profile', 'sellerProfile']));
+        $useCase->execute($user, $request->toDto());
+
+        return new UserResource($user->fresh(['brandProfile', 'influencerProfile']));
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AdminUserController;
 use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,18 +22,19 @@ Route::prefix('v1')->group(function () {
         Route::get('auth/me', [AuthController::class, 'me']);
 
         Route::prefix('users')->group(function () {
-
             Route::get('profile', [UserController::class, 'show']);
-            Route::get('profile/status', [UserController::class, 'status']);
-            Route::post('profile/complete', [UserController::class, 'complete']);
-            Route::post('profile/skip', [UserController::class, 'skipProfile']);
-            Route::put('profile', [UserController::class, 'updateUserProfile']);
-            Route::put('seller-profile', [UserController::class, 'updateSellerProfile']);
-            Route::post('become-seller', [UserController::class, 'becomeSeller']);
+            Route::put('profile/brand', [UserController::class, 'updateBrandProfile']);
+            Route::put('profile/influencer', [UserController::class, 'updateInfluencerProfile']);
         });
 
-        Route::apiResource('products', ProductController::class);
-
-        Route::patch('products/{product}/status', [ProductController::class, 'updateStatus']);
+        Route::prefix('admin/users')->group(function () {
+            Route::get('', [AdminUserController::class, 'index']);
+            Route::get('{id}', [AdminUserController::class, 'show']);
+            Route::put('{id}', [AdminUserController::class, 'update']);
+            Route::post('{id}/suspend', [AdminUserController::class, 'suspend']);
+            Route::post('{id}/activate', [AdminUserController::class, 'activate']);
+            Route::delete('{id}', [AdminUserController::class, 'delete']);
+            Route::post('{id}/restore', [AdminUserController::class, 'restore']);
+        });
     });
 });

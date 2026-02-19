@@ -6,27 +6,22 @@ namespace App\Enums;
 
 enum UserRole: string
 {
-    case Buyer = 'buyer';
-    case Seller = 'seller';
+    case Brand = 'brand';
+    case Influencer = 'influencer';
     case Admin = 'admin';
-
-    public function isSeller(): bool
-    {
-        return $this === self::Seller;
-    }
-
-    public function isSellerOrAdmin(): bool
-    {
-        return $this === self::Seller || $this === self::Admin;
-    }
-
-    public function isBuyer(): bool
-    {
-        return $this === self::Buyer;
-    }
 
     public function isAdmin(): bool
     {
         return $this === self::Admin;
+    }
+
+    public function isBrand(): bool
+    {
+        return $this === self::Brand;
+    }
+
+    public function isInfluencer(): bool
+    {
+        return $this === self::Influencer;
     }
 }
