@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\V1\AdminUserController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CampaignController;
+use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +28,15 @@ Route::prefix('v1')->group(function () {
             Route::put('profile/brand', [UserController::class, 'updateBrandProfile']);
             Route::put('profile/influencer', [UserController::class, 'updateInfluencerProfile']);
         });
+
+        Route::apiResource('products', ProductController::class);
+
+        Route::get('campaigns', [CampaignController::class, 'index']);
+        Route::post('campaigns', [CampaignController::class, 'store']);
+        Route::get('campaigns/{campaign}', [CampaignController::class, 'show']);
+        Route::put('campaigns/{campaign}', [CampaignController::class, 'update']);
+        Route::delete('campaigns/{campaign}', [CampaignController::class, 'destroy']);
+        Route::post('campaigns/{campaign}/publish', [CampaignController::class, 'publish']);
 
         Route::prefix('admin/users')->group(function () {
             Route::get('', [AdminUserController::class, 'index']);

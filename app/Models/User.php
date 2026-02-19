@@ -63,4 +63,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(InfluencerProfile::class, 'user_id');
     }
+
+    public function products()
+    {
+        return $this->hasMany(\App\Models\Product::class, 'brand_id');
+    }
+
+    public function campaigns()
+    {
+        return $this->hasMany(\App\Models\Campaign::class, 'brand_id');
+    }
 }
