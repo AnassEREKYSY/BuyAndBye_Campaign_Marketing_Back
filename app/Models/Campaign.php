@@ -61,4 +61,9 @@ class Campaign extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
+
+    public function applications()
+    {
+        return $this->hasMany(\App\Models\CampaignApplication::class, 'campaign_id');
+    }
 }

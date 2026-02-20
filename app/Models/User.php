@@ -73,4 +73,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Campaign::class, 'brand_id');
     }
+
+    public function campaignApplications()
+    {
+        return $this->hasMany(\App\Models\CampaignApplication::class, 'influencer_id');
+    }
 }
