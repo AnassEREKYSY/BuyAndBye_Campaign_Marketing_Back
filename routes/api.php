@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdminUserController;
+use App\Http\Controllers\Api\V1\ApplicationDecisionController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CampaignApplicationController;
 use App\Http\Controllers\Api\V1\CampaignController;
@@ -42,6 +43,10 @@ Route::prefix('v1')->group(function () {
         Route::post('campaigns/{campaign}/apply', [CampaignApplicationController::class, 'apply']);
         Route::get('applications', [CampaignApplicationController::class, 'myApplications']);
         Route::get('brand/campaigns/{campaign}/applications', [CampaignApplicationController::class, 'brandCampaignApplications']);
+
+        Route::post('applications/{id}/shortlist', [ApplicationDecisionController::class, 'shortlist']);
+        Route::post('applications/{id}/accept', [ApplicationDecisionController::class, 'accept']);
+        Route::post('applications/{id}/reject', [ApplicationDecisionController::class, 'reject']);
 
         Route::prefix('admin/users')->group(function () {
             Route::get('', [AdminUserController::class, 'index']);

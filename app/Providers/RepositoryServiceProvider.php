@@ -19,6 +19,8 @@ use App\Infrastructure\Persistence\Eloquent\ProductRepository;
 use App\Infrastructure\Persistence\Eloquent\UserRepository;
 use App\Infrastructure\Storage\LocalFileStorage;
 use Illuminate\Support\ServiceProvider;
+use App\Domain\Contracts\CollaborationRepositoryInterface;
+use App\Infrastructure\Persistence\Eloquent\CollaborationRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -30,5 +32,6 @@ class RepositoryServiceProvider extends ServiceProvider
         CampaignRepositoryInterface::class => CampaignRepository::class,
         CampaignApplicationRepositoryInterface::class => CampaignApplicationRepository::class,
         FileStorageInterface::class => LocalFileStorage::class,
+        CollaborationRepositoryInterface::class => CollaborationRepository::class,
     ];
 }

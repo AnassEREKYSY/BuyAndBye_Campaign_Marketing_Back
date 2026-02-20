@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Eloquent;
 
 use App\Domain\Contracts\CampaignApplicationRepositoryInterface;
+use App\Enums\ApplicationStatus;
 use App\Models\Campaign;
 use App\Models\CampaignApplication;
 use App\Models\User;
@@ -15,7 +16,7 @@ class CampaignApplicationRepository implements CampaignApplicationRepositoryInte
     public function findById(string $id): ?CampaignApplication
     {
         return CampaignApplication::query()
-            ->with(['campaign.product', 'influencer'])
+            ->with(['campaign.product', 'campaign.brand', 'influencer'])
             ->where('id', $id)
             ->first();
     }
@@ -49,5 +50,30 @@ class CampaignApplicationRepository implements CampaignApplicationRepositoryInte
             ->where('campaign_id', $campaign->id)
             ->latest()
             ->paginate($size, ['*'], 'page', $page);
+    }
+
+    public function updateStatus(CampaignApplication $application, ApplicationStatus $status): void
+    {
+        $application->update(['status' => $status->value]);
+    }
+
+    public function findAcceptedForCampaign(string $campaignId): ?CampaignApplication
+    {
+        return CampaignApplication::query()
+            ->where('campaign_id', $campaignId)
+            ->where('status', ApplicationStatus::Accepted->value)
+            ->first();
+    }
+
+    public function rejectOthers(string $campaignId, string $keepApplicationId): int
+    {
+        return CampaignApplication::query()
+            ->where('campaign_id', $campaignId)
+            ->where('id', '!=', $keepApplicationId)
+            ->whereIn('status', [
+                ApplicationStatus::Pending->value,
+                ApplicationStatus::Shortlisted->value,
+            ])
+            ->update(['status' => ApplicationStatus::Rejected->value]);
     }
 }
