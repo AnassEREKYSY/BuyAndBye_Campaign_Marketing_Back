@@ -56,4 +56,14 @@ class Collaboration extends Model
     {
         return $this->belongsTo(User::class, 'influencer_id');
     }
+    
+    public function trackingLink()
+    {
+        return $this->hasOne(\App\Models\TrackingLink::class, 'collaboration_id');
+    }
+
+    public function promoCode()
+    {
+        return $this->hasOne(\App\Models\PromoCode::class, 'collaboration_id');
+    }
 }

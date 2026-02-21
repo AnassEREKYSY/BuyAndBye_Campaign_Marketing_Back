@@ -5,7 +5,9 @@ use App\Http\Controllers\Api\V1\ApplicationDecisionController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CampaignApplicationController;
 use App\Http\Controllers\Api\V1\CampaignController;
+use App\Http\Controllers\Api\V1\CollaborationController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +17,8 @@ Route::get('/health', fn () => response()->json([
 ]));
 
 Route::prefix('v1')->group(function () {
+
+    Route::get('t/{code}', [TrackingController::class, 'redirect']);
 
     Route::prefix('auth')->middleware('throttle:5,1')->group(function () {
         Route::post('register', [AuthController::class, 'register']);
@@ -47,6 +51,9 @@ Route::prefix('v1')->group(function () {
         Route::post('applications/{id}/shortlist', [ApplicationDecisionController::class, 'shortlist']);
         Route::post('applications/{id}/accept', [ApplicationDecisionController::class, 'accept']);
         Route::post('applications/{id}/reject', [ApplicationDecisionController::class, 'reject']);
+
+        Route::get('collaborations', [CollaborationController::class, 'index']);
+        Route::get('collaborations/{id}', [CollaborationController::class, 'show']);
 
         Route::prefix('admin/users')->group(function () {
             Route::get('', [AdminUserController::class, 'index']);

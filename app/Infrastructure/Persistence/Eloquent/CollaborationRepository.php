@@ -6,6 +6,8 @@ namespace App\Infrastructure\Persistence\Eloquent;
 
 use App\Domain\Contracts\CollaborationRepositoryInterface;
 use App\Models\Collaboration;
+use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class CollaborationRepository implements CollaborationRepositoryInterface
 {
@@ -20,5 +22,31 @@ class CollaborationRepository implements CollaborationRepositoryInterface
     public function create(array $data): Collaboration
     {
         return Collaboration::create($data);
+    }
+
+    public function findById(string $id): ?Collaboration
+    {
+        return Collaboration::query()
+            ->with(['trackingLink', 'promoCode', 'campaign.product', 'brand', 'influencer'])
+            ->where('id', $id)
+            ->first();
+    }
+
+    public function paginateForBrand(User $brand, int $page, int $size): LengthAwarePaginator
+    {
+        return Collaboration::query()
+            ->with(['trackingLink', 'promoCode', 'campaign.product', 'influencer'])
+            ->where('brand_id', $brand->id)
+            ->latest()
+            ->paginate($size, ['*'], 'page', $page);
+    }
+
+    public function paginateForInfluencer(User $influencer, int $page, int $size): LengthAwarePaginator
+    {
+        return Collaboration::query()
+            ->with(['trackingLink', 'promoCode', 'campaign.product', 'brand'])
+            ->where('influencer_id', $influencer->id)
+            ->latest()
+            ->paginate($size, ['*'], 'page', $page);
     }
 }

@@ -21,6 +21,12 @@ use App\Infrastructure\Storage\LocalFileStorage;
 use Illuminate\Support\ServiceProvider;
 use App\Domain\Contracts\CollaborationRepositoryInterface;
 use App\Infrastructure\Persistence\Eloquent\CollaborationRepository;
+use App\Domain\Contracts\ClickEventRepositoryInterface;
+use App\Domain\Contracts\PromoCodeRepositoryInterface;
+use App\Domain\Contracts\TrackingLinkRepositoryInterface;
+use App\Infrastructure\Persistence\Eloquent\ClickEventRepository;
+use App\Infrastructure\Persistence\Eloquent\PromoCodeRepository;
+use App\Infrastructure\Persistence\Eloquent\TrackingLinkRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -33,5 +39,8 @@ class RepositoryServiceProvider extends ServiceProvider
         CampaignApplicationRepositoryInterface::class => CampaignApplicationRepository::class,
         FileStorageInterface::class => LocalFileStorage::class,
         CollaborationRepositoryInterface::class => CollaborationRepository::class,
+        ClickEventRepositoryInterface::class => ClickEventRepository::class,
+        TrackingLinkRepositoryInterface::class => TrackingLinkRepository::class,
+        PromoCodeRepositoryInterface::class => PromoCodeRepository::class,
     ];
 }
