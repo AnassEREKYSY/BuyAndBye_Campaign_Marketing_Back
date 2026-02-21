@@ -29,6 +29,8 @@ use App\Infrastructure\Persistence\Eloquent\PromoCodeRepository;
 use App\Infrastructure\Persistence\Eloquent\TrackingLinkRepository;
 use App\Domain\Contracts\CampaignPayoutTierRepositoryInterface;
 use App\Infrastructure\Persistence\Eloquent\CampaignPayoutTierRepository;
+use App\Domain\Contracts\CollaborationPayoutRepositoryInterface;
+use App\Infrastructure\Persistence\Eloquent\CollaborationPayoutRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -45,5 +47,6 @@ class RepositoryServiceProvider extends ServiceProvider
         TrackingLinkRepositoryInterface::class => TrackingLinkRepository::class,
         PromoCodeRepositoryInterface::class => PromoCodeRepository::class,
         CampaignPayoutTierRepositoryInterface::class => CampaignPayoutTierRepository::class,
+        CollaborationPayoutRepositoryInterface::class => CollaborationPayoutRepository::class,
     ];
 }

@@ -8,6 +8,7 @@ use App\Domain\Contracts\CollaborationRepositoryInterface;
 use App\Models\Collaboration;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class CollaborationRepository implements CollaborationRepositoryInterface
 {
@@ -48,5 +49,23 @@ class CollaborationRepository implements CollaborationRepositoryInterface
             ->where('influencer_id', $influencer->id)
             ->latest()
             ->paginate($size, ['*'], 'page', $page);
+    }
+
+    public function listForCampaign(string $campaignId): Collection
+    {
+        return Collaboration::query()
+            ->with(['trackingLink', 'promoCode', 'campaign.product', 'influencer'])
+            ->where('campaign_id', $campaignId)
+            ->latest()
+            ->get();
+    }
+
+    public function listForInfluencer(string $influencerId): Collection
+    {
+        return Collaboration::query()
+            ->with(['trackingLink', 'promoCode', 'campaign.product', 'brand'])
+            ->where('influencer_id', $influencerId)
+            ->latest()
+            ->get();
     }
 }

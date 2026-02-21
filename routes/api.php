@@ -1,13 +1,20 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AdminPayoutController;
 use App\Http\Controllers\Api\V1\AdminUserController;
 use App\Http\Controllers\Api\V1\ApplicationDecisionController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BrandCampaignAnalyticsController;
+use App\Http\Controllers\Api\V1\BrandCampaignTimelineController;
+use App\Http\Controllers\Api\V1\BrandPayoutController;
 use App\Http\Controllers\Api\V1\CampaignApplicationController;
 use App\Http\Controllers\Api\V1\CampaignController;
 use App\Http\Controllers\Api\V1\CampaignPayoutTierController;
 use App\Http\Controllers\Api\V1\CollaborationController;
 use App\Http\Controllers\Api\V1\CollaborationMetricsController;
+use App\Http\Controllers\Api\V1\CollaborationTimelineController;
+use App\Http\Controllers\Api\V1\InfluencerDashboardController;
+use App\Http\Controllers\Api\V1\InfluencerPayoutController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -20,7 +27,7 @@ Route::get('/health', fn () => response()->json([
 
 Route::prefix('v1')->group(function () {
 
-    Route::get('t/{code}', [TrackingController::class, 'redirect']);
+    Route::get('t/{code}', [TrackingController::class, 'redirect'])->middleware('throttle:60,1');
 
     Route::prefix('auth')->middleware('throttle:5,1')->group(function () {
         Route::post('register', [AuthController::class, 'register']);
@@ -63,6 +70,20 @@ Route::prefix('v1')->group(function () {
         Route::get('collaborations/{id}', [CollaborationController::class, 'show']);
         Route::get('collaborations/{id}/stats', [CollaborationMetricsController::class, 'stats']);
         Route::get('collaborations/{id}/payout', [CollaborationMetricsController::class, 'payout']);
+
+        Route::get('brand/campaigns/{campaign}/summary', [BrandCampaignAnalyticsController::class, 'summary']);
+        Route::get('influencer/dashboard', [InfluencerDashboardController::class, 'dashboard']);
+
+        Route::get('brand/campaigns/{campaign}/timeline', [BrandCampaignTimelineController::class, 'timeline']);
+        Route::get('collaborations/{id}/timeline', [CollaborationTimelineController::class, 'timeline']);
+
+        Route::post('brand/collaborations/{id}/payouts/close', [BrandPayoutController::class, 'close']);
+        Route::get('influencer/payouts', [InfluencerPayoutController::class, 'index']);
+
+        Route::prefix('admin/payouts')->group(function () {
+            Route::post('{id}/approve', [AdminPayoutController::class, 'approve']);
+            Route::post('{id}/mark-paid', [AdminPayoutController::class, 'markPaid']);
+        });
 
         Route::prefix('admin/users')->group(function () {
             Route::get('', [AdminUserController::class, 'index']);

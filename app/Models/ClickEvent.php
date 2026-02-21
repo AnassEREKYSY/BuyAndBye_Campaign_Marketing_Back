@@ -25,6 +25,7 @@ class ClickEvent extends Model
         'ip',
         'user_agent',
         'referrer',
+        'unique_key',
     ];
 
     protected static function booted(): void

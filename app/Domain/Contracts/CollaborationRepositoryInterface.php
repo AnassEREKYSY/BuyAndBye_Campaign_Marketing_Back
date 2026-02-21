@@ -7,6 +7,7 @@ namespace App\Domain\Contracts;
 use App\Models\Collaboration;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 interface CollaborationRepositoryInterface
 {
@@ -19,4 +20,8 @@ interface CollaborationRepositoryInterface
     public function paginateForBrand(User $brand, int $page, int $size): LengthAwarePaginator;
 
     public function paginateForInfluencer(User $influencer, int $page, int $size): LengthAwarePaginator;
+
+    public function listForCampaign(string $campaignId): Collection;
+
+    public function listForInfluencer(string $influencerId): Collection;
 }
