@@ -13,4 +13,9 @@ class ClickEventRepository implements ClickEventRepositoryInterface
     {
         return ClickEvent::create($data);
     }
+
+    public function countByTrackingLinkId(string $trackingLinkId): int
+    {
+        return ClickEvent::query()->where('tracking_link_id', $trackingLinkId)->count();
+    }
 }

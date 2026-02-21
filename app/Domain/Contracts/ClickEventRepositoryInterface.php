@@ -9,4 +9,5 @@ use App\Models\ClickEvent;
 interface ClickEventRepositoryInterface
 {
     public function create(array $data): ClickEvent;
+    public function countByTrackingLinkId(string $trackingLinkId): int;
 }

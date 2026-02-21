@@ -5,7 +5,9 @@ use App\Http\Controllers\Api\V1\ApplicationDecisionController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CampaignApplicationController;
 use App\Http\Controllers\Api\V1\CampaignController;
+use App\Http\Controllers\Api\V1\CampaignPayoutTierController;
 use App\Http\Controllers\Api\V1\CollaborationController;
+use App\Http\Controllers\Api\V1\CollaborationMetricsController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -44,6 +46,11 @@ Route::prefix('v1')->group(function () {
         Route::delete('campaigns/{campaign}', [CampaignController::class, 'destroy']);
         Route::post('campaigns/{campaign}/publish', [CampaignController::class, 'publish']);
 
+        Route::get('campaigns/{campaign}/tiers', [CampaignPayoutTierController::class, 'index']);
+        Route::post('campaigns/{campaign}/tiers', [CampaignPayoutTierController::class, 'store']);
+        Route::put('tiers/{id}', [CampaignPayoutTierController::class, 'update']);
+        Route::delete('tiers/{id}', [CampaignPayoutTierController::class, 'destroy']);
+
         Route::post('campaigns/{campaign}/apply', [CampaignApplicationController::class, 'apply']);
         Route::get('applications', [CampaignApplicationController::class, 'myApplications']);
         Route::get('brand/campaigns/{campaign}/applications', [CampaignApplicationController::class, 'brandCampaignApplications']);
@@ -54,6 +61,8 @@ Route::prefix('v1')->group(function () {
 
         Route::get('collaborations', [CollaborationController::class, 'index']);
         Route::get('collaborations/{id}', [CollaborationController::class, 'show']);
+        Route::get('collaborations/{id}/stats', [CollaborationMetricsController::class, 'stats']);
+        Route::get('collaborations/{id}/payout', [CollaborationMetricsController::class, 'payout']);
 
         Route::prefix('admin/users')->group(function () {
             Route::get('', [AdminUserController::class, 'index']);

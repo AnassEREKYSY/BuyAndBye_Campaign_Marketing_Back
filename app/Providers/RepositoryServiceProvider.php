@@ -27,6 +27,8 @@ use App\Domain\Contracts\TrackingLinkRepositoryInterface;
 use App\Infrastructure\Persistence\Eloquent\ClickEventRepository;
 use App\Infrastructure\Persistence\Eloquent\PromoCodeRepository;
 use App\Infrastructure\Persistence\Eloquent\TrackingLinkRepository;
+use App\Domain\Contracts\CampaignPayoutTierRepositoryInterface;
+use App\Infrastructure\Persistence\Eloquent\CampaignPayoutTierRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -42,5 +44,6 @@ class RepositoryServiceProvider extends ServiceProvider
         ClickEventRepositoryInterface::class => ClickEventRepository::class,
         TrackingLinkRepositoryInterface::class => TrackingLinkRepository::class,
         PromoCodeRepositoryInterface::class => PromoCodeRepository::class,
+        CampaignPayoutTierRepositoryInterface::class => CampaignPayoutTierRepository::class,
     ];
 }
