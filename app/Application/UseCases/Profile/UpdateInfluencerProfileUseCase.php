@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\UseCases\Profile;
 
 use App\Application\Dtos\Profile\UpdateInfluencerProfileDTO;
+use App\Domain\Contracts\FileStorageInterface;
 use App\Domain\Contracts\InfluencerProfileRepositoryInterface;
 use App\Domain\Contracts\UserRepositoryInterface;
 use App\Models\User;
@@ -15,6 +16,7 @@ class UpdateInfluencerProfileUseCase
     public function __construct(
         private readonly InfluencerProfileRepositoryInterface $influencers,
         private readonly UserRepositoryInterface $users,
+        private readonly FileStorageInterface $fileStorage,
     ) {}
 
     public function execute(User $user, UpdateInfluencerProfileDTO $dto): void
@@ -37,6 +39,15 @@ class UpdateInfluencerProfileUseCase
 
             if (!empty($update)) {
                 $this->influencers->upsertForUser($user, $update);
+            }
+
+            if ($dto->photo) {
+                if ($user->photo_url) {
+                    $this->fileStorage->deleteByUrl($user->photo_url);
+                }
+
+                $photoUrl = $this->fileStorage->storeUserAvatar((string) $user->id, $dto->photo);
+                $this->users->update($user, ['photo_url' => $photoUrl]);
             }
 
             $user->load('influencerProfile');

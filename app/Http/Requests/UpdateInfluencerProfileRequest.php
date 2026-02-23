@@ -26,16 +26,29 @@ class UpdateInfluencerProfileRequest extends FormRequest
             'country_code' => ['sometimes', 'nullable', 'string', 'max:10'],
             'language' => ['sometimes', 'nullable', 'string', 'max:20'],
             'media_kit_url' => ['sometimes', 'nullable', 'url', 'max:255'],
+            'photo' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
-            if (count($this->all()) === 0) {
+            if (count($this->all()) === 0 && ! $this->hasFile('photo')) {
                 $validator->errors()->add('fields', 'At least one field must be provided.');
             }
         });
+    }
+
+    private function toNullableInt(mixed $v): ?int
+    {
+        if ($v === null || $v === '') return null;
+        return (int) $v;
+    }
+
+    private function toNullableFloat(mixed $v): ?float
+    {
+        if ($v === null || $v === '') return null;
+        return (float) $v;
     }
 
     public function toDto(): UpdateInfluencerProfileDTO
@@ -45,13 +58,14 @@ class UpdateInfluencerProfileRequest extends FormRequest
             instagramUrl: $this->input('instagram_url'),
             tiktokUrl: $this->input('tiktok_url'),
             youtubeUrl: $this->input('youtube_url'),
-            followersInstagram: $this->input('followers_instagram'),
-            followersTiktok: $this->input('followers_tiktok'),
-            followersYoutube: $this->input('followers_youtube'),
-            avgEngagementRate: $this->input('avg_engagement_rate'),
+            followersInstagram: $this->toNullableInt($this->input('followers_instagram')),
+            followersTiktok: $this->toNullableInt($this->input('followers_tiktok')),
+            followersYoutube: $this->toNullableInt($this->input('followers_youtube')),
+            avgEngagementRate: $this->toNullableFloat($this->input('avg_engagement_rate')),
             countryCode: $this->input('country_code'),
             language: $this->input('language'),
             mediaKitUrl: $this->input('media_kit_url'),
+            photo: $this->file('photo'),
         );
     }
 }

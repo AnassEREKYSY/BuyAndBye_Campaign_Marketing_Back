@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Dtos\Profile;
 
+use Illuminate\Http\UploadedFile;
+
 final class UpdateInfluencerProfileDTO
 {
     public function __construct(
@@ -18,5 +20,6 @@ final class UpdateInfluencerProfileDTO
         public readonly ?string $countryCode,
         public readonly ?string $language,
         public readonly ?string $mediaKitUrl,
+        public readonly ?UploadedFile $photo,
     ) {}
 }
