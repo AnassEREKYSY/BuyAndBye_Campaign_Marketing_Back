@@ -14,9 +14,13 @@ class ListCampaignsUseCase
         private readonly CampaignRepositoryInterface $campaigns
     ) {}
 
-    public function execute(User $user, int $page, int $size, ?string $status = null): LengthAwarePaginator
+    public function execute(User $user, int $page, int $size, ?string $status = null, string $scope = 'mine'): LengthAwarePaginator
     {
         if ($user->role->isBrand()) {
+            if ($scope === 'all') {
+                return $this->campaigns->paginate($page, $size, $status, null);
+            }
+
             return $this->campaigns->paginateForBrand($user, $page, $size, $status);
         }
 

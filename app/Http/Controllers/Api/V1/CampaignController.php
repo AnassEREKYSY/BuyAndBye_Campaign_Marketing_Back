@@ -36,11 +36,12 @@ class CampaignController extends Controller
      * @OA\Get(
      *     path="/api/v1/campaigns",
      *     tags={"Campaigns"},
-     *     summary="List campaigns (brand sees own; influencer sees all)",
+     *     summary="List campaigns (influencer sees all; brand sees own by default; use scope=all to browse all)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="page", in="query", required=false, @OA\Schema(type="integer", example=1)),
      *     @OA\Parameter(name="size", in="query", required=false, @OA\Schema(type="integer", example=20)),
      *     @OA\Parameter(name="status", in="query", required=false, @OA\Schema(type="string", enum={"draft","published","closed"})),
+     *     @OA\Parameter(name="scope", in="query", required=false, @OA\Schema(type="string", enum={"mine","all"}, example="mine")),
      *     @OA\Response(response=200, description="Campaigns list"),
      *     @OA\Response(response=401, description="Unauthorized")
      * )
@@ -51,7 +52,12 @@ class CampaignController extends Controller
         $size = (int) request()->query('size', 20);
         $status = request()->query('status');
 
-        $campaigns = $useCase->execute($this->user(), $page, $size, $status);
+        $scope = (string) request()->query('scope', 'mine');
+        if (! in_array($scope, ['mine', 'all'], true)) {
+            $scope = 'mine';
+        }
+
+        $campaigns = $useCase->execute($this->user(), $page, $size, $status, $scope);
 
         return CampaignResource::collection($campaigns);
     }
@@ -98,20 +104,25 @@ class CampaignController extends Controller
      * @OA\Get(
      *     path="/api/v1/campaigns/{id}",
      *     tags={"Campaigns"},
-     *     summary="Get a campaign by id",
+     *     summary="Get a campaign by id (brand can view others only if not draft)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string", format="uuid")),
      *     @OA\Response(response=200, description="Campaign returned"),
      *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=403, description="Forbidden"),
      *     @OA\Response(response=404, description="Not found")
      * )
      */
     public function show(Campaign $campaign): CampaignResource
     {
-        $campaign->load('product');
+        $campaign->load(['product', 'brand']);
 
-        if ($this->user()->role->isBrand() && $campaign->brand_id !== $this->user()->id) {
-            abort(403, 'Forbidden');
+        $user = $this->user();
+
+        if ($user->role->isBrand() && $campaign->brand_id !== $user->id) {
+            if ($campaign->status->value === 'draft') {
+                abort(403, 'Forbidden');
+            }
         }
 
         return new CampaignResource($campaign);
