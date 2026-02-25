@@ -22,6 +22,7 @@ class CampaignResource extends JsonResource
             'start_at' => $this->start_at?->toIso8601String(),
             'end_at' => $this->end_at?->toIso8601String(),
             'status' => $this->status->value,
+            'applications_count' => isset($this->applications_count) ? (int) $this->applications_count : null,
             'product' => $this->whenLoaded('product', fn () => new ProductResource($this->product)),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

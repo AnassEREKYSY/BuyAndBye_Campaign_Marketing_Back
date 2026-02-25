@@ -70,39 +70,64 @@ class ClickEventRepository implements ClickEventRepositoryInterface
 
     public function timelineByCampaign(string $campaignId, string $from, string $to, string $group): array
     {
-        $format = $this->dateFormat($group);
+        [$selectExpr, $groupExpr] = $this->groupExpr($group);
 
         return ClickEvent::query()
-            ->selectRaw("DATE_FORMAT(created_at, '{$format}') as d, COUNT(*) as clicks_total, COUNT(DISTINCT unique_key) as clicks_unique")
+            ->selectRaw("$selectExpr as d, COUNT(*) as clicks_total, COUNT(DISTINCT unique_key) as clicks_unique")
             ->where('campaign_id', $campaignId)
             ->whereBetween('created_at', [$from, $to])
-            ->groupBy(DB::raw("DATE_FORMAT(created_at, '{$format}')"))
+            ->groupBy(DB::raw($groupExpr))
             ->orderBy('d')
             ->get()
-            ->map(fn ($r) => ['date' => $r->d, 'clicks_total' => (int) $r->clicks_total, 'clicks_unique' => (int) $r->clicks_unique])
+            ->map(fn ($r) => [
+                'date' => (string) $r->d,
+                'clicks_total' => (int) $r->clicks_total,
+                'clicks_unique' => (int) $r->clicks_unique,
+            ])
             ->all();
     }
 
     public function timelineByTrackingLink(string $trackingLinkId, string $from, string $to, string $group): array
     {
-        $format = $this->dateFormat($group);
+        [$selectExpr, $groupExpr] = $this->groupExpr($group);
 
         return ClickEvent::query()
-            ->selectRaw("DATE_FORMAT(created_at, '{$format}') as d, COUNT(*) as clicks_total, COUNT(DISTINCT unique_key) as clicks_unique")
+            ->selectRaw("$selectExpr as d, COUNT(*) as clicks_total, COUNT(DISTINCT unique_key) as clicks_unique")
             ->where('tracking_link_id', $trackingLinkId)
             ->whereBetween('created_at', [$from, $to])
-            ->groupBy(DB::raw("DATE_FORMAT(created_at, '{$format}')"))
+            ->groupBy(DB::raw($groupExpr))
             ->orderBy('d')
             ->get()
-            ->map(fn ($r) => ['date' => $r->d, 'clicks_total' => (int) $r->clicks_total, 'clicks_unique' => (int) $r->clicks_unique])
+            ->map(fn ($r) => [
+                'date' => (string) $r->d,
+                'clicks_total' => (int) $r->clicks_total,
+                'clicks_unique' => (int) $r->clicks_unique,
+            ])
             ->all();
     }
 
-    private function dateFormat(string $group): string
+    private function groupExpr(string $group): array
     {
+        $driver = DB::getDriverName();
+        $group = $group ?: 'day';
+
+        if ($driver === 'pgsql') {
+            return match ($group) {
+                'day' => ["to_char(created_at, 'YYYY-MM-DD')", "to_char(created_at, 'YYYY-MM-DD')"],
+                default => ["to_char(created_at, 'YYYY-MM-DD')", "to_char(created_at, 'YYYY-MM-DD')"],
+            };
+        }
+
+        if ($driver === 'sqlite') {
+            return match ($group) {
+                'day' => ["strftime('%Y-%m-%d', created_at)", "strftime('%Y-%m-%d', created_at)"],
+                default => ["strftime('%Y-%m-%d', created_at)", "strftime('%Y-%m-%d', created_at)"],
+            };
+        }
+
         return match ($group) {
-            'day' => '%Y-%m-%d',
-            default => '%Y-%m-%d',
+            'day' => ["DATE_FORMAT(created_at, '%Y-%m-%d')", "DATE_FORMAT(created_at, '%Y-%m-%d')"],
+            default => ["DATE_FORMAT(created_at, '%Y-%m-%d')", "DATE_FORMAT(created_at, '%Y-%m-%d')"],
         };
     }
 }

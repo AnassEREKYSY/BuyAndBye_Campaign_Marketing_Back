@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TimelineRequest extends FormRequest
@@ -24,12 +25,12 @@ class TimelineRequest extends FormRequest
 
     public function from(): string
     {
-        return (string) $this->query('from') . ' 00:00:00';
+        return Carbon::parse((string) $this->query('from'))->startOfDay()->toDateTimeString();
     }
 
     public function to(): string
     {
-        return (string) $this->query('to') . ' 23:59:59';
+        return Carbon::parse((string) $this->query('to'))->endOfDay()->toDateTimeString();
     }
 
     public function group(): string

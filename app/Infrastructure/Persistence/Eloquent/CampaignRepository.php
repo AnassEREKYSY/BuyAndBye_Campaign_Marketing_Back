@@ -13,7 +13,9 @@ class CampaignRepository implements CampaignRepositoryInterface
 {
     public function paginate(int $page, int $size, ?string $status = null, ?string $brandId = null): LengthAwarePaginator
     {
-        $q = Campaign::query()->with(['product', 'brand']);
+        $q = Campaign::query()
+            ->with(['product', 'brand'])
+            ->withCount('applications');
 
         if ($status) {
             $q->where('status', $status);
@@ -30,6 +32,7 @@ class CampaignRepository implements CampaignRepositoryInterface
     {
         $q = Campaign::query()
             ->with(['product'])
+            ->withCount('applications')
             ->where('brand_id', $brand->id);
 
         if ($status) {
@@ -41,7 +44,11 @@ class CampaignRepository implements CampaignRepositoryInterface
 
     public function findById(string $id): ?Campaign
     {
-        return Campaign::query()->with(['product', 'brand'])->where('id', $id)->first();
+        return Campaign::query()
+            ->with(['product', 'brand'])
+            ->withCount('applications')
+            ->where('id', $id)
+            ->first();
     }
 
     public function create(array $data): Campaign
