@@ -25,5 +25,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('brand-or-admin', fn (User $user): bool => $user->role->isBrand() || $user->role->isAdmin());
 
         Gate::define('influencer-or-admin', fn (User $user): bool => $user->role->isInfluencer() || $user->role->isAdmin());
+        
+        Gate::define('tiers-read', fn (User $user): bool => $user->role->isBrand() || $user->role->isInfluencer() || $user->role->isAdmin());
     }
 }

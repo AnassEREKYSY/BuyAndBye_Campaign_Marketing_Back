@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\ApplicationDecisionController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BrandCampaignAnalyticsController;
 use App\Http\Controllers\Api\V1\BrandCampaignTimelineController;
+use App\Http\Controllers\Api\V1\BrandInfluencerController;
 use App\Http\Controllers\Api\V1\BrandPayoutController;
 use App\Http\Controllers\Api\V1\CampaignApplicationController;
 use App\Http\Controllers\Api\V1\CampaignController;
@@ -65,6 +66,8 @@ Route::prefix('v1')->group(function () {
         Route::post('applications/{id}/shortlist', [ApplicationDecisionController::class, 'shortlist']);
         Route::post('applications/{id}/accept', [ApplicationDecisionController::class, 'accept']);
         Route::post('applications/{id}/reject', [ApplicationDecisionController::class, 'reject']);
+
+        Route::get('brand/influencers/{id}', [BrandInfluencerController::class, 'show']);
 
         Route::get('collaborations', [CollaborationController::class, 'index']);
         Route::get('collaborations/{id}', [CollaborationController::class, 'show']);

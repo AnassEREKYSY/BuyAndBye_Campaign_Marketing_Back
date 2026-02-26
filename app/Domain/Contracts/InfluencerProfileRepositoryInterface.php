@@ -10,4 +10,6 @@ use App\Models\User;
 interface InfluencerProfileRepositoryInterface
 {
     public function upsertForUser(User $user, array $data): InfluencerProfile;
+
+    public function findByUserId(string $userId): ?InfluencerProfile;
 }

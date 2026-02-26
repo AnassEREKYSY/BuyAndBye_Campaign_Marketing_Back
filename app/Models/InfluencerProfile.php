@@ -34,4 +34,9 @@ class InfluencerProfile extends Model
         'followers_youtube' => 'integer',
         'avg_engagement_rate' => 'float',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

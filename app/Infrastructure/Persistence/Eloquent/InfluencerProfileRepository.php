@@ -17,4 +17,12 @@ class InfluencerProfileRepository implements InfluencerProfileRepositoryInterfac
             array_merge($data, ['user_id' => $user->id])
         );
     }
+
+    public function findByUserId(string $userId): ?InfluencerProfile
+    {
+        return InfluencerProfile::query()
+            ->with(['user'])
+            ->where('user_id', $userId)
+            ->first();
+    }
 }

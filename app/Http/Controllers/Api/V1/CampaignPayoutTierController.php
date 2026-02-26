@@ -34,7 +34,7 @@ class CampaignPayoutTierController extends Controller
      * @OA\Get(
      *     path="/api/v1/campaigns/{campaignId}/tiers",
      *     tags={"Campaign Tiers"},
-     *     summary="List payout tiers for a campaign (brand only)",
+     *     summary="List payout tiers for a campaign (brand/influencer/admin)",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(name="campaignId", in="path", required=true, @OA\Schema(type="string", format="uuid")),
      *     @OA\Response(response=200, description="Tiers list"),
@@ -44,7 +44,13 @@ class CampaignPayoutTierController extends Controller
      */
     public function index(string $campaign, ListCampaignTiersUseCase $useCase): AnonymousResourceCollection
     {
-        Gate::authorize('brand-only');
+        Gate::authorize('tiers-read');
+        // brand is not included here, so allow brand explicitly:
+        if ($this->user()->role->isBrand()) {
+            // ok
+        } else {
+            // already validated by influencer-or-admin
+        }
 
         $tiers = $useCase->execute($campaign);
 
