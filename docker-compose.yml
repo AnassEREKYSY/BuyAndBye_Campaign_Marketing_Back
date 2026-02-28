@@ -1,3 +1,4 @@
+# docker-compose.yml (API project - no Adminer)
 services:
   api:
     build:
@@ -15,12 +16,14 @@ services:
       APP_DEBUG: "true"
       APP_KEY: ${APP_KEY:-}
       APP_URL: http://localhost:8000
+
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432
       DB_DATABASE: ${POSTGRES_DB:-buyandbye}
       DB_USERNAME: ${DB_USERNAME:-app}
       DB_PASSWORD: ${DB_PASSWORD:-password}
+
       CACHE_DRIVER: file
       QUEUE_CONNECTION: sync
       SESSION_DRIVER: file
@@ -30,38 +33,14 @@ services:
     networks:
       - buyandbye_network
 
-  web:
-    build:
-      context: ../BuyAndByeWeb
-      dockerfile: ../BuyAndByeApi/docker/web/Dockerfile
-    container_name: buyandbye_web
-    working_dir: /app
-    volumes:
-      - ../BuyAndByeWeb:/app
-      - /app/node_modules
-    ports:
-      - "5173:5173"
-    environment:
-      VITE_API_BASE_URL: http://localhost:8000/api
-      VITE_APP_NAME: "Buy & Bye"
-      VITE_APP_ENV: development
-    depends_on:
-      - api
-    networks:
-      - buyandbye_network
-
   postgres:
     image: postgres:16
     container_name: buyandbye_postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_ROOT_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_ROOT_PASSWORD:-postgres}
+      POSTGRES_USER: ${DB_USERNAME:-app}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-buyandbye}
-    command: >
-      postgres
-      -c app.db_user=${DB_USERNAME:-app}
-      -c app.db_password=${DB_PASSWORD:-password}
     ports:
       - "5433:5432"
     volumes:
@@ -70,21 +49,10 @@ services:
     networks:
       - buyandbye_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-app} -d ${POSTGRES_DB:-buyandbye}"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  adminer:
-    image: adminer:latest
-    container_name: buyandbye_adminer
-    restart: always
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-    networks:
-      - buyandbye_network
 
 volumes:
   postgres_data:
