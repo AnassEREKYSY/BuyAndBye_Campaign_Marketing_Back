@@ -8,6 +8,8 @@ use App\Domain\Contracts\CampaignPayoutTierRepositoryInterface;
 use App\Domain\Contracts\ClickEventRepositoryInterface;
 use App\Domain\Contracts\CollaborationPayoutRepositoryInterface;
 use App\Domain\Contracts\CollaborationRepositoryInterface;
+use App\Domain\Contracts\NotificationServiceInterface;
+use App\Enums\NotificationType;
 use App\Models\User;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\ForbiddenHttpException;
@@ -19,7 +21,8 @@ class CloseCollaborationPayoutUseCase
         private readonly CollaborationRepositoryInterface $collaborations,
         private readonly ClickEventRepositoryInterface $clicks,
         private readonly CampaignPayoutTierRepositoryInterface $tiers,
-        private readonly CollaborationPayoutRepositoryInterface $payouts
+        private readonly CollaborationPayoutRepositoryInterface $payouts,
+        private readonly NotificationServiceInterface $notifications,
     ) {}
 
     public function execute(User $brand, string $collaborationId, string $start, string $end)
@@ -53,7 +56,7 @@ class CloseCollaborationPayoutUseCase
         $amount = $matched ? (float) $matched['payout_amount'] : 0.0;
         $currency = $matched ? $matched['currency'] : 'MAD';
 
-        return $this->payouts->create([
+        $payout = $this->payouts->create([
             'collaboration_id' => $collab->id,
             'period_start' => $start,
             'period_end' => $end,
@@ -64,6 +67,38 @@ class CloseCollaborationPayoutUseCase
             'currency' => $currency,
             'status' => 'pending',
         ]);
+
+        $this->notifications->notify(
+            userId: (string) $collab->influencer_id,
+            type: NotificationType::PayoutClosed->value,
+            title: 'Payout created',
+            body: 'A payout period was closed. Amount: ' . $amount . ' ' . $currency,
+            data: [
+                'collaboration_id' => (string) $collab->id,
+                'payout_id' => (string) $payout->id,
+                'period_start' => $start,
+                'period_end' => $end,
+            ],
+            actorId: (string) $brand->id,
+            entityType: 'CollaborationPayout',
+            entityId: (string) $payout->id
+        );
+
+        $this->notifications->notify(
+            userId: (string) $brand->id,
+            type: NotificationType::PayoutClosed->value,
+            title: 'Payout closed successfully',
+            body: 'You closed a payout period. Amount: ' . $amount . ' ' . $currency,
+            data: [
+                'collaboration_id' => (string) $collab->id,
+                'payout_id' => (string) $payout->id,
+            ],
+            actorId: (string) $brand->id,
+            entityType: 'CollaborationPayout',
+            entityId: (string) $payout->id
+        );
+
+        return $payout;
     }
 
     private function matchTier($tiers, int $value): ?array

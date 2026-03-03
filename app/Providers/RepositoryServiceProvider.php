@@ -19,6 +19,7 @@ use App\Infrastructure\Persistence\Eloquent\ProductRepository;
 use App\Infrastructure\Persistence\Eloquent\UserRepository;
 use App\Infrastructure\Storage\LocalFileStorage;
 use Illuminate\Support\ServiceProvider;
+
 use App\Domain\Contracts\CollaborationRepositoryInterface;
 use App\Infrastructure\Persistence\Eloquent\CollaborationRepository;
 use App\Domain\Contracts\ClickEventRepositoryInterface;
@@ -31,6 +32,10 @@ use App\Domain\Contracts\CampaignPayoutTierRepositoryInterface;
 use App\Infrastructure\Persistence\Eloquent\CampaignPayoutTierRepository;
 use App\Domain\Contracts\CollaborationPayoutRepositoryInterface;
 use App\Infrastructure\Persistence\Eloquent\CollaborationPayoutRepository;
+use App\Domain\Contracts\UserNotificationRepositoryInterface;
+use App\Infrastructure\Persistence\Eloquent\UserNotificationRepository;
+use App\Domain\Contracts\NotificationServiceInterface;
+use App\Services\Notifications\NotificationService;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -48,5 +53,7 @@ class RepositoryServiceProvider extends ServiceProvider
         PromoCodeRepositoryInterface::class => PromoCodeRepository::class,
         CampaignPayoutTierRepositoryInterface::class => CampaignPayoutTierRepository::class,
         CollaborationPayoutRepositoryInterface::class => CollaborationPayoutRepository::class,
+        UserNotificationRepositoryInterface::class => UserNotificationRepository::class,
+        NotificationServiceInterface::class => NotificationService::class,
     ];
 }

@@ -6,10 +6,13 @@ namespace App\Application\UseCases\CampaignApplications;
 
 use App\Domain\Contracts\CampaignApplicationRepositoryInterface;
 use App\Domain\Contracts\CollaborationRepositoryInterface;
+use App\Domain\Contracts\NotificationServiceInterface;
 use App\Domain\Contracts\PromoCodeRepositoryInterface;
 use App\Domain\Contracts\TrackingLinkRepositoryInterface;
 use App\Enums\ApplicationStatus;
 use App\Enums\CollaborationStatus;
+use App\Enums\NotificationType;
+use App\Models\CampaignApplication;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -24,6 +27,7 @@ class AcceptFinalApplicationUseCase
         private readonly CollaborationRepositoryInterface $collaborations,
         private readonly TrackingLinkRepositoryInterface $trackingLinks,
         private readonly PromoCodeRepositoryInterface $promoCodes,
+        private readonly NotificationServiceInterface $notifications,
     ) {}
 
     public function execute(User $brand, string $applicationId)
@@ -61,6 +65,18 @@ class AcceptFinalApplicationUseCase
                 ]);
             }
 
+            $otherInfluencerIds = CampaignApplication::query()
+                ->where('campaign_id', $campaign->id)
+                ->where('id', '!=', $application->id)
+                ->whereIn('status', [
+                    ApplicationStatus::Pending->value,
+                    ApplicationStatus::Shortlisted->value,
+                ])
+                ->pluck('influencer_id')
+                ->unique()
+                ->values()
+                ->all();
+
             $this->applications->rejectOthers($campaign->id, $application->id);
 
             $campaign->load('product');
@@ -82,6 +98,36 @@ class AcceptFinalApplicationUseCase
                     'collaboration_id' => $collab->id,
                     'code' => $promo,
                 ]);
+            }
+
+            $this->notifications->notify(
+                userId: (string) $application->influencer_id,
+                type: NotificationType::ApplicationAccepted->value,
+                title: 'You were accepted',
+                body: 'Congrats! You were accepted for: ' . ($campaign->title ?? 'campaign'),
+                data: [
+                    'campaign_id' => (string) $campaign->id,
+                    'application_id' => (string) $application->id,
+                    'collaboration_id' => (string) $collab->id,
+                ],
+                actorId: (string) $brand->id,
+                entityType: 'CampaignApplication',
+                entityId: (string) $application->id
+            );
+
+            foreach ($otherInfluencerIds as $influencerId) {
+                $this->notifications->notify(
+                    userId: (string) $influencerId,
+                    type: NotificationType::ApplicationRejected->value,
+                    title: 'Campaign finalized',
+                    body: 'This campaign has selected another candidate: ' . ($campaign->title ?? 'campaign'),
+                    data: [
+                        'campaign_id' => (string) $campaign->id,
+                    ],
+                    actorId: (string) $brand->id,
+                    entityType: 'Campaign',
+                    entityId: (string) $campaign->id
+                );
             }
 
             return $application->fresh(['campaign.product', 'influencer']);

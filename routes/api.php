@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\V1\InfluencerPayoutController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', fn () => response()->json([
@@ -96,6 +97,13 @@ Route::prefix('v1')->group(function () {
             Route::post('{id}/activate', [AdminUserController::class, 'activate']);
             Route::delete('{id}', [AdminUserController::class, 'delete']);
             Route::post('{id}/restore', [AdminUserController::class, 'restore']);
+        });
+
+        Route::prefix('notifications')->group(function () {
+            Route::get('', [NotificationController::class, 'index']);
+            Route::get('unread-count', [NotificationController::class, 'unreadCount']);
+            Route::post('{id}/read', [NotificationController::class, 'markRead']);
+            Route::post('read-all', [NotificationController::class, 'markAllRead']);
         });
     });
 });

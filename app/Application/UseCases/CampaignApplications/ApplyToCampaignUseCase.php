@@ -7,8 +7,10 @@ namespace App\Application\UseCases\CampaignApplications;
 use App\Application\Dtos\CampaignApplication\ApplyToCampaignDTO;
 use App\Domain\Contracts\CampaignApplicationRepositoryInterface;
 use App\Domain\Contracts\CampaignRepositoryInterface;
+use App\Domain\Contracts\NotificationServiceInterface;
 use App\Enums\ApplicationStatus;
 use App\Enums\CampaignStatus;
+use App\Enums\NotificationType;
 use App\Models\CampaignApplication;
 use App\Models\User;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -19,6 +21,7 @@ class ApplyToCampaignUseCase
     public function __construct(
         private readonly CampaignRepositoryInterface $campaigns,
         private readonly CampaignApplicationRepositoryInterface $applications,
+        private readonly NotificationServiceInterface $notifications, // ✅ NEW
     ) {}
 
     public function execute(User $influencer, string $campaignId, ApplyToCampaignDTO $dto): CampaignApplication
@@ -43,6 +46,21 @@ class ApplyToCampaignUseCase
             'message' => $dto->message,
             'status' => ApplicationStatus::Pending->value,
         ]);
+
+        $this->notifications->notify(
+            userId: (string) $campaign->brand_id,
+            type: NotificationType::CampaignApplied->value,
+            title: 'New application received',
+            body: 'An influencer applied to your campaign: ' . ($campaign->title ?? 'campaign'),
+            data: [
+                'campaign_id' => (string) $campaign->id,
+                'application_id' => (string) $application->id,
+                'influencer_id' => (string) $influencer->id,
+            ],
+            actorId: (string) $influencer->id,
+            entityType: 'CampaignApplication',
+            entityId: (string) $application->id
+        );
 
         return $application->fresh(['campaign.product', 'influencer']);
     }
