@@ -13,6 +13,7 @@ use App\Enums\CampaignStatus;
 use App\Enums\NotificationType;
 use App\Models\CampaignApplication;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -21,7 +22,7 @@ class ApplyToCampaignUseCase
     public function __construct(
         private readonly CampaignRepositoryInterface $campaigns,
         private readonly CampaignApplicationRepositoryInterface $applications,
-        private readonly NotificationServiceInterface $notifications, // ✅ NEW
+        private readonly NotificationServiceInterface $notifications,
     ) {}
 
     public function execute(User $influencer, string $campaignId, ApplyToCampaignDTO $dto): CampaignApplication
@@ -47,20 +48,29 @@ class ApplyToCampaignUseCase
             'status' => ApplicationStatus::Pending->value,
         ]);
 
-        $this->notifications->notify(
-            userId: (string) $campaign->brand_id,
-            type: NotificationType::CampaignApplied->value,
-            title: 'New application received',
-            body: 'An influencer applied to your campaign: ' . ($campaign->title ?? 'campaign'),
-            data: [
+        try {
+            $this->notifications->notify(
+                userId: (string) $campaign->brand_id,
+                type: NotificationType::CampaignApplied->value,
+                title: 'New application received',
+                body: 'An influencer applied to your campaign: ' . ($campaign->title ?? 'campaign'),
+                actorId: (string) $influencer->id,
+                entityType: 'campaign_application',
+                entityId: (string) $application->id,
+                data: [
+                    'campaign_id' => (string) $campaign->id,
+                    'campaign_title' => (string) ($campaign->title ?? ''),
+                    'application_id' => (string) $application->id,
+                    'influencer_id' => (string) $influencer->id,
+                ],
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Notification failed on apply', [
                 'campaign_id' => (string) $campaign->id,
                 'application_id' => (string) $application->id,
-                'influencer_id' => (string) $influencer->id,
-            ],
-            actorId: (string) $influencer->id,
-            entityType: 'CampaignApplication',
-            entityId: (string) $application->id
-        );
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return $application->fresh(['campaign.product', 'influencer']);
     }
