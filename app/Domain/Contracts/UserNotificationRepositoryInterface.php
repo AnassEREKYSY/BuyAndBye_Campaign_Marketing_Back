@@ -25,4 +25,6 @@ interface UserNotificationRepositoryInterface
     public function markRead(string $notificationId, string $userId): UserNotification;
 
     public function markAllRead(string $userId): int;
+
+    public function delete(UserNotification $notification): void;
 }

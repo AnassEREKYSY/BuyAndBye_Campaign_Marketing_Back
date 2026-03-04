@@ -68,4 +68,9 @@ class UserNotificationRepository implements UserNotificationRepositoryInterface
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
     }
+
+    public function delete(UserNotification $notification): void
+    {
+        $notification->delete();
+    }
 }

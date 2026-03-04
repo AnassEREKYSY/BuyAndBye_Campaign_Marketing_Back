@@ -104,6 +104,7 @@ Route::prefix('v1')->group(function () {
             Route::get('unread-count', [NotificationController::class, 'unreadCount']);
             Route::post('{id}/read', [NotificationController::class, 'markRead']);
             Route::post('read-all', [NotificationController::class, 'markAllRead']);
+            Route::delete('{id}', [NotificationController::class, 'destroy']);
         });
     });
 });

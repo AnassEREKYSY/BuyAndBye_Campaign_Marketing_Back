@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Application\UseCases\Notifications\DeleteNotificationUseCase;
 use App\Application\UseCases\Notifications\ListNotificationsUseCase;
 use App\Application\UseCases\Notifications\MarkAllNotificationsReadUseCase;
 use App\Application\UseCases\Notifications\MarkNotificationReadUseCase;
@@ -101,5 +102,24 @@ class NotificationController extends Controller
         $count = $useCase->execute($this->user());
 
         return response()->json(['data' => ['marked' => $count]]);
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/notifications/{id}",
+     *     tags={"Notifications"},
+     *     summary="Delete a notification",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string", format="uuid")),
+     *     @OA\Response(response=200, description="Deleted"),
+     *     @OA\Response(response=401, description="Unauthorized"),
+     *     @OA\Response(response=404, description="Not found")
+     * )
+     */
+    public function destroy(string $id, DeleteNotificationUseCase $useCase): JsonResponse
+    {
+        $useCase->execute($this->user(), $id);
+
+        return response()->json(['data' => ['deleted' => true]]);
     }
 }
