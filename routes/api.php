@@ -14,12 +14,13 @@ use App\Http\Controllers\Api\V1\CampaignPayoutTierController;
 use App\Http\Controllers\Api\V1\CollaborationController;
 use App\Http\Controllers\Api\V1\CollaborationMetricsController;
 use App\Http\Controllers\Api\V1\CollaborationTimelineController;
+use App\Http\Controllers\Api\V1\ConversationController;
 use App\Http\Controllers\Api\V1\InfluencerDashboardController;
 use App\Http\Controllers\Api\V1\InfluencerPayoutController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\UserController;
-use App\Http\Controllers\Api\V1\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', fn () => response()->json([
@@ -105,6 +106,15 @@ Route::prefix('v1')->group(function () {
             Route::post('{id}/read', [NotificationController::class, 'markRead']);
             Route::post('read-all', [NotificationController::class, 'markAllRead']);
             Route::delete('{id}', [NotificationController::class, 'destroy']);
+        });
+
+        Route::prefix('conversations')->group(function () {
+            Route::get('', [ConversationController::class, 'index']);
+            Route::get('unread-count', [ConversationController::class, 'unreadCount']);
+            Route::get('{id}', [ConversationController::class, 'show']);
+            Route::get('{id}/messages', [ConversationController::class, 'messages']);
+            Route::post('{id}/messages', [ConversationController::class, 'send']);
+            Route::post('{id}/read', [ConversationController::class, 'markRead']);
         });
     });
 });

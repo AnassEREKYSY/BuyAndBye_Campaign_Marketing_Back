@@ -6,6 +6,7 @@ namespace App\Application\UseCases\CampaignApplications;
 
 use App\Domain\Contracts\CampaignApplicationRepositoryInterface;
 use App\Domain\Contracts\CollaborationRepositoryInterface;
+use App\Domain\Contracts\ConversationRepositoryInterface;
 use App\Domain\Contracts\NotificationServiceInterface;
 use App\Domain\Contracts\PromoCodeRepositoryInterface;
 use App\Domain\Contracts\TrackingLinkRepositoryInterface;
@@ -28,6 +29,7 @@ class AcceptFinalApplicationUseCase
         private readonly TrackingLinkRepositoryInterface $trackingLinks,
         private readonly PromoCodeRepositoryInterface $promoCodes,
         private readonly NotificationServiceInterface $notifications,
+        private readonly ConversationRepositoryInterface $conversations,
     ) {}
 
     public function execute(User $brand, string $applicationId)
@@ -98,6 +100,11 @@ class AcceptFinalApplicationUseCase
                     'collaboration_id' => $collab->id,
                     'code' => $promo,
                 ]);
+            }
+
+            $conversation = $this->conversations->findByApplicationId((string) $application->id);
+            if ($conversation) {
+                $this->conversations->closeConversation((string) $conversation->id, 'campaign_finalized');
             }
 
             $this->notifications->notify(
