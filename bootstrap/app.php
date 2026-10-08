@@ -17,5 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // One short line per error, so the cause stays readable in Vercel's logs (they cut long stack traces).
+        $exceptions->report(function (\Throwable $e) {
+            error_log('[kickback] ' . get_class($e) . ': ' . $e->getMessage());
+        });
     })->create();
