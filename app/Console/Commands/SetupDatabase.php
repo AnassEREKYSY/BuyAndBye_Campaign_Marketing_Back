@@ -19,6 +19,12 @@ class SetupDatabase extends Command
 
     public function handle(): int
     {
+        if (config('database.default') !== 'pgsql') {
+            $this->error('DB_CONNECTION must be pgsql.');
+
+            return self::FAILURE;
+        }
+
         $schema = (string) config('database.connections.pgsql.search_path');
 
         if (! preg_match('/^[a-z_][a-z0-9_]*$/', $schema) || $schema === 'public') {
@@ -31,9 +37,19 @@ class SetupDatabase extends Command
         DB::statement("create schema if not exists \"{$schema}\"");
         $this->info("Schema \"{$schema}\" ready.");
 
-        return $this->call('migrate:fresh', [
+        $code = $this->call('migrate:fresh', [
             '--force' => true,
             '--seed' => ! $this->option('no-seed'),
         ]);
+
+        $count = DB::selectOne('select count(*) as n from information_schema.tables where table_schema = ?', [$schema])->n ?? 0;
+        if ((int) $count === 0) {
+            $this->error("No tables were created in \"{$schema}\". Check the connection settings.");
+
+            return self::FAILURE;
+        }
+        $this->info("{$count} tables in \"{$schema}\".");
+
+        return $code;
     }
 }
