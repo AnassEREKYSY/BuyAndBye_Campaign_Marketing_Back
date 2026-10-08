@@ -31,7 +31,6 @@
     "LOG_CHANNEL": "stderr",
     "DB_CONNECTION": "pgsql",
     "DB_SSLMODE": "require",
-    "DB_EMULATE_PREPARES": "true",
     "DB_SCHEMA": "kickback"
   }
 }

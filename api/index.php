@@ -22,7 +22,6 @@ $defaults = [
     'DB_CONNECTION' => 'pgsql',
     'DB_SSLMODE' => 'require',
     'DB_SCHEMA' => 'kickback',
-    'DB_EMULATE_PREPARES' => 'true',
 ];
 foreach ($defaults as $key => $value) {
     if (getenv($key) === false && ! isset($_ENV[$key]) && ! isset($_SERVER[$key])) {
