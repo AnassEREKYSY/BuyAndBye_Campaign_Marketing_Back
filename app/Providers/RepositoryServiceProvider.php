@@ -36,6 +36,7 @@ use App\Infrastructure\Persistence\Eloquent\TrackingLinkRepository;
 use App\Infrastructure\Persistence\Eloquent\UserNotificationRepository;
 use App\Infrastructure\Persistence\Eloquent\UserRepository;
 use App\Infrastructure\Storage\LocalFileStorage;
+use App\Infrastructure\Storage\SupabaseFileStorage;
 use App\Services\Notifications\NotificationService;
 use Illuminate\Support\ServiceProvider;
 use App\Domain\Contracts\CampaignPayoutTierRepositoryInterface;
@@ -49,7 +50,6 @@ class RepositoryServiceProvider extends ServiceProvider
         ProductRepositoryInterface::class => ProductRepository::class,
         CampaignRepositoryInterface::class => CampaignRepository::class,
         CampaignApplicationRepositoryInterface::class => CampaignApplicationRepository::class,
-        FileStorageInterface::class => LocalFileStorage::class,
         CollaborationRepositoryInterface::class => CollaborationRepository::class,
         ClickEventRepositoryInterface::class => ClickEventRepository::class,
         TrackingLinkRepositoryInterface::class => TrackingLinkRepository::class,
@@ -62,4 +62,14 @@ class RepositoryServiceProvider extends ServiceProvider
         ConversationRepositoryInterface::class => ConversationRepository::class,
         MessageRepositoryInterface::class => MessageRepository::class,
     ];
+
+    public function register(): void
+    {
+        // Supabase Storage when configured (production on Vercel), local "public" disk otherwise.
+        $this->app->singleton(FileStorageInterface::class, function () {
+            return config('services.supabase.url') && config('services.supabase.service_key')
+                ? new SupabaseFileStorage()
+                : new LocalFileStorage();
+        });
+    }
 }
