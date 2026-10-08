@@ -24,10 +24,25 @@ use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/health', fn () => response()->json([
-    'status' => 'ok',
-    'message' => 'API is running',
-]));
+Route::get('/health', function () {
+    $data = ['status' => 'ok', 'message' => 'API is running'];
+
+    // Connection diagnostics, only when APP_DEBUG is on.
+    if (config('app.debug')) {
+        try {
+            $data['db'] = [
+                'configured_schema' => config('database.connections.pgsql.search_path'),
+                'env_db_schema' => env('DB_SCHEMA'),
+                'search_path' => \Illuminate\Support\Facades\DB::selectOne('show search_path')->search_path ?? null,
+                'kickback_tables' => \Illuminate\Support\Facades\DB::selectOne("select count(*) as n from information_schema.tables where table_schema = 'kickback'")->n ?? null,
+            ];
+        } catch (\Throwable $e) {
+            $data['db_error'] = $e->getMessage();
+        }
+    }
+
+    return response()->json($data);
+});
 
 Route::prefix('v1')->group(function () {
 
