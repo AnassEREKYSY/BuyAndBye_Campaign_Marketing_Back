@@ -83,8 +83,10 @@ class DemoSeeder extends Seeder
             $c3 = $this->campaign($nour, $serum, 'Back-to-school skincare', 'Simple 3-step routine for busy mornings.', 'percent', 10, 6000, 10, 70, 'draft');
             $c4 = $this->campaign($atlas, $beans, 'Slow mornings with Atlas', 'Your coffee ritual, filmed in one take.', 'percent', 15, 12000, -85, 20, 'published');
             $c5 = $this->campaign($atlas, $kit, 'Ramadan iftar coffee', 'Coffee after iftar with family and friends.', 'fixed', 40, 5000, -160, -100, 'closed');
+            // Open campaign nobody joined yet, so the demo creator has something to apply to.
+            $c6 = $this->campaign($atlas, $kit, 'Pour-over at home', 'Teach your audience a simple pour-over in under a minute.', 'fixed', 35, 7000, -2, 60, 'published');
 
-            foreach ([$c1, $c2, $c3, $c4, $c5] as $c) {
+            foreach ([$c1, $c2, $c3, $c4, $c5, $c6] as $c) {
                 $this->tiers($c);
             }
 
@@ -391,12 +393,30 @@ class DemoSeeder extends Seeder
             ]);
         }
 
-        $script = [
-            [$brandId, 'Welcome on board! Your link and promo code are ready in the collaboration page.'],
-            [$creatorId, 'Thanks! I will post the first reel this weekend.'],
-            [$brandId, 'Perfect. Feel free to share a draft if you want feedback before posting.'],
-            [$creatorId, 'Sent you the draft, let me know what you think.'],
+        $scripts = [
+            [
+                [$brandId, 'Welcome on board! Your link and promo code are ready in the collaboration page.'],
+                [$creatorId, 'Thanks! I will post the first reel this weekend.'],
+                [$brandId, 'Perfect. Feel free to share a draft if you want feedback before posting.'],
+                [$creatorId, 'Sent you the draft, let me know what you think.'],
+            ],
+            [
+                [$brandId, 'Hi! Happy to have you on this one. Any questions about the brief?'],
+                [$creatorId, 'All clear. Can I mention the promo code in stories as well as in my bio?'],
+                [$brandId, 'Yes, anywhere you like. The code and the link are both tracked.'],
+            ],
+            [
+                [$creatorId, 'Hello, the package arrived today, thank you!'],
+                [$brandId, 'Great. Take your time, natural light works best for this product.'],
+                [$creatorId, 'Noted. First post goes live on Friday evening.'],
+                [$brandId, 'Sounds good, we will share it from our account too.'],
+            ],
+            [
+                [$brandId, 'Your clicks look strong this week, nice work.'],
+                [$creatorId, 'Thanks! The tutorial format worked better than I expected.'],
+            ],
         ];
+        $script = $scripts[mt_rand(0, count($scripts) - 1)];
         foreach ($script as $i => [$sender, $body]) {
             $t = $at->addHours(2 + $i * 5);
             DB::table('messages')->insert([
