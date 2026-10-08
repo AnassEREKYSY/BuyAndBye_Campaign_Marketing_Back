@@ -84,7 +84,7 @@ It refuses to run when `DB_SCHEMA` is `public`, so another app's tables cannot b
 | `DATABASE_URL` | Supabase **session pooler** URI (port 5432) |
 | `CORS_ALLOWED_ORIGINS` | the web app URL, e.g. `https://kickback.vercel.app` |
 | `SUPABASE_URL` | `https://xxxx.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | the service role key |
+| `SUPABASE_SERVICE_ROLE_KEY` | the **secret** key (`sb_secret_...`) or the legacy `service_role` key |
 
 `DB_SCHEMA=kickback`, stateless cache/session, logs to stderr and `/tmp` caches are already set in
 `vercel.json`. PHP runs on the community runtime `vercel-php@0.8.0` (PHP 8.4).

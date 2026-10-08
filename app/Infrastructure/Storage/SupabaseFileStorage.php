@@ -51,9 +51,19 @@ class SupabaseFileStorage implements FileStorageInterface
 
         $path = Str::after($publicUrl, $marker);
 
-        Http::withToken($this->key)
-            ->withHeaders(['apikey' => $this->key])
+        $this->client()
             ->delete("{$this->baseUrl}/storage/v1/object/{$this->bucket}", ['prefixes' => [$path]]);
+    }
+
+    /**
+     * New Supabase secret keys (sb_secret_...) go in the apikey header only;
+     * legacy service_role JWTs are also sent as a bearer token.
+     */
+    private function client(): \Illuminate\Http\Client\PendingRequest
+    {
+        $request = Http::withHeaders(['apikey' => $this->key]);
+
+        return str_starts_with($this->key, 'sb_') ? $request : $request->withToken($this->key);
     }
 
     private function put(string $folder, UploadedFile $file): string
@@ -61,9 +71,8 @@ class SupabaseFileStorage implements FileStorageInterface
         $extension = $file->guessExtension() ?: $file->getClientOriginalExtension() ?: 'bin';
         $path = trim($folder, '/') . '/' . Str::uuid() . '.' . $extension;
 
-        $response = Http::withToken($this->key)
+        $response = $this->client()
             ->withHeaders([
-                'apikey' => $this->key,
                 'x-upsert' => 'true',
                 'cache-control' => '3600',
             ])
