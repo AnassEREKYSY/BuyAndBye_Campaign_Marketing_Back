@@ -35,6 +35,9 @@ Route::get('/health', function () {
                 'env_db_schema' => env('DB_SCHEMA'),
                 'search_path' => \Illuminate\Support\Facades\DB::selectOne('show search_path')->search_path ?? null,
                 'kickback_tables' => \Illuminate\Support\Facades\DB::selectOne("select count(*) as n from information_schema.tables where table_schema = 'kickback'")->n ?? null,
+                'database' => \Illuminate\Support\Facades\DB::selectOne('select current_database() as d, current_user as u'),
+                'tables_per_schema' => collect(\Illuminate\Support\Facades\DB::select("select table_schema as s, count(*) as n from information_schema.tables where table_schema not in ('pg_catalog','information_schema') group by 1 order by 1"))->pluck('n', 's'),
+                'public_tables' => collect(\Illuminate\Support\Facades\DB::select("select table_name from information_schema.tables where table_schema = 'public' order by 1"))->pluck('table_name'),
             ];
         } catch (\Throwable $e) {
             $data['db_error'] = $e->getMessage();
