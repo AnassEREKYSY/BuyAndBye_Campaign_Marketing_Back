@@ -76,6 +76,8 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Required behind Supabase's transaction pooler (port 6543), which does not support prepared statements.
+            'options' => env('DB_EMULATE_PREPARES', false) ? [PDO::ATTR_EMULATE_PREPARES => true] : [],
         ],
 
         'sqlsrv' => [

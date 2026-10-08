@@ -95,7 +95,7 @@ class AcceptFinalApplicationUseCase
 
             $existingPromo = $this->promoCodes->findByCollaborationId($collab->id);
             if (! $existingPromo) {
-                $promo = 'BB-' . Str::upper(Str::random(8));
+                $promo = 'KB-' . Str::upper(Str::random(8));
                 $this->promoCodes->create([
                     'collaboration_id' => $collab->id,
                     'code' => $promo,

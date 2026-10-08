@@ -6,9 +6,9 @@ use OpenApi\Annotations as OA;
 
 /**
  * @OA\Info(
- *     title="Buy & Bye API",
+ *     title="Kickback API",
  *     version="1.0.0",
- *     description="REST API for Buy & Bye marketplace"
+ *     description="REST API for Kickback, influencer campaign tracking"
  * )
  *
  * @OA\Server(

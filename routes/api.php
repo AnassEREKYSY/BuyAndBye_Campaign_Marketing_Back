@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdminPayoutController;
+use App\Http\Controllers\Api\V1\AnalyticsOverviewController;
 use App\Http\Controllers\Api\V1\AdminUserController;
 use App\Http\Controllers\Api\V1\ApplicationDecisionController;
 use App\Http\Controllers\Api\V1\AuthController;
@@ -78,6 +79,9 @@ Route::prefix('v1')->group(function () {
 
         Route::get('brand/campaigns/{campaign}/summary', [BrandCampaignAnalyticsController::class, 'summary']);
         Route::get('influencer/dashboard', [InfluencerDashboardController::class, 'dashboard']);
+
+        Route::get('brand/analytics/overview', [AnalyticsOverviewController::class, 'brand']);
+        Route::get('influencer/analytics/overview', [AnalyticsOverviewController::class, 'influencer']);
 
         Route::get('brand/campaigns/{campaign}/timeline', [BrandCampaignTimelineController::class, 'timeline']);
         Route::get('collaborations/{id}/timeline', [CollaborationTimelineController::class, 'timeline']);
